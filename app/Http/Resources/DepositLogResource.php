@@ -16,9 +16,9 @@ class DepositLogResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'payment_type' => $this->bank->paymentType->name,
-            'account_name' => $this->bank->account_name,
-            'account_number' => $this->bank->account_number,
+            'payment_type' => $this->paymentType->name,
+            'account_name' => $this->user->account_name,
+            'account_number' => $this->user->account_number,
             'amount' => $this->amount,
             'status' => $this->status === 0 ? 'Pending' : ($this->status === 1 ? 'Success' : 'Reject'),  // Converts the 'status' property to a human-readable string
             'datetime' => $this->created_at->format('Y-m-d H:i:s'),  // Formats the 'created_at' property as a string

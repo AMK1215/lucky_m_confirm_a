@@ -23,7 +23,6 @@ use App\Http\Controllers\Admin\Player\PlayerController;
 use App\Http\Controllers\Admin\GameTypeProductController;
 use App\Http\Controllers\Admin\BannerAds\BannerAdsController;
 use App\Http\Controllers\Admin\Deposit\DepositRequestController;
-use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\TransferLog\TransferLogController;
 use App\Http\Controllers\Admin\WithDraw\WithDrawRequestController;
 
@@ -73,11 +72,10 @@ Route::group([
     Route::resource('text', BannerTextController::class);
     Route::resource('/promotions', PromotionController::class);
     Route::resource('paymentTypes', PaymentTypeController::class);
-    Route::resource('bank', BankController::class);
     Route::get('gametypes', [GameTypeProductController::class, 'index'])->name('gametypes.index');
     Route::get('gametypes/{game_type_id}/product/{product_id}', [GameTypeProductController::class, 'edit'])->name('gametypes.edit');
     Route::post('gametypes/{game_type_id}/product/{product_id}', [GameTypeProductController::class, 'update'])->name('gametypes.update');
-     // game list start
+    // game list start
     Route::get('all-game-lists', [GameListController::class, 'index'])->name('gameLists.index');
     Route::get('all-game-lists/{id}', [GameListController::class, 'edit'])->name('gameLists.edit');
     Route::post('all-game-lists/{id}', [GameListController::class, 'update'])->name('gameLists.update');
@@ -96,17 +94,17 @@ Route::group([
     Route::get('agent-changepassword/{id}', [AgentController::class, 'getChangePassword'])->name('agent.getChangePassword');
     Route::post('agent-changepassword/{id}', [AgentController::class, 'makeChangePassword'])->name('agent.makeChangePassword');
 
-     Route::get('agent-to-player-deplogs', [AgentController::class, 'AgentToPlayerDepositLog'])->name('agent.AgentToPlayerDepLog');
+    Route::get('agent-to-player-deplogs', [AgentController::class, 'AgentToPlayerDepositLog'])->name('agent.AgentToPlayerDepLog');
 
-     Route::get('agent-win-lose-report', [AgentController::class, 'AgentWinLoseReport'])->name('agent.AgentWinLose');
+    Route::get('agent-win-lose-report', [AgentController::class, 'AgentWinLoseReport'])->name('agent.AgentWinLose');
 
-     Route::get('/agent/wldetails/{agent_id}/{month}', [AgentController::class, 'AgentWinLoseDetails'])->name('agent_winLdetails');
+    Route::get('/agent/wldetails/{agent_id}/{month}', [AgentController::class, 'AgentWinLoseDetails'])->name('agent_winLdetails');
 
-     Route::get('auth-agent-win-lose-report', [AgentController::class, 'AuthAgentWinLoseReport'])->name('AuthAgentWinLose');
+    Route::get('auth-agent-win-lose-report', [AgentController::class, 'AuthAgentWinLoseReport'])->name('AuthAgentWinLose');
 
-     Route::get('/authagent/wldetails/{agent_id}/{month}', [AgentController::class, 'AuthAgentWinLoseDetails'])->name('authagent_winLdetails');
+    Route::get('/authagent/wldetails/{agent_id}/{month}', [AgentController::class, 'AuthAgentWinLoseDetails'])->name('authagent_winLdetails');
 
-     Route::get('/agent-to-player-detail/{agent_id}/{player_id}', [AgentController::class, 'AgentToPlayerDetail'])->name('agent.to.player.detail');
+    Route::get('/agent-to-player-detail/{agent_id}/{player_id}', [AgentController::class, 'AgentToPlayerDetail'])->name('agent.to.player.detail');
 
 
     Route::resource('master', MasterController::class);
@@ -125,7 +123,6 @@ Route::group([
     Route::post('withdraw/reject/{withdraw}', [WithDrawRequestController::class, 'statusChangeReject'])->name('agent.withdrawStatusreject');
 
     Route::get('deposit', [DepositRequestController::class, 'index'])->name('agent.deposit');
-    Route::get('deposit/{deposit}', [DepositRequestController::class, 'view'])->name('agent.depositView');
     Route::post('deposit/{deposit}', [DepositRequestController::class, 'statusChangeIndex'])->name('agent.depositStatusUpdate');
     Route::post('deposit/reject/{deposit}', [DepositRequestController::class, 'statusChangeReject'])->name('agent.depositStatusreject');
 

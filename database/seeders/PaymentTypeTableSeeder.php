@@ -14,47 +14,56 @@ class PaymentTypeTableSeeder extends Seeder
     {
         $types = [
             [
-                'name' => 'AYA Banking',
-                'image' => 'aya_banking.png',
+                'name' => 'Kasikorn Bank (K plus)',
+                'image' => 'KPLUS.png',
             ],
             [
-                'name' => 'AYA Pay',
-                'image' => 'aya_pay.png',
+                'name' => 'Siam Commercial Bank (SCB)',
+                'image' => 'SCB.png',
             ],
             [
-                'name' => 'CB Banking',
-                'image' => 'cb_banking.png',
+                'name' => 'TMBTHANACHART BANK (TTB)',
+                'image' => 'TTB.png',
             ],
             [
-                'name' => 'CB Pay',
-                'image' => 'cb_pay.png',
+                'name' => 'Krungthai Bank (KTB)',
+                'image' => 'KTB.png',
             ],
             [
-                'name' => 'KBZ Banking',
-                'image' => 'kbz_banking.png',
+                'name' => 'Bangkok Bank(BBL)',
+                'image' => 'BBL.png',
             ],
             [
-                'name' => 'KBZ Pay',
-                'image' => 'kpay.png',
+                'name' => 'United Overseas Bank(UOB)',
+                'image' => 'UOB.png',
             ],
             [
-                'name' => 'MAB Banking',
-                'image' => 'mab_banking.png',
+                'name' => 'Kiatnakin Phatra Bank(KKP)',
+                'image' => 'KKP.png',
             ],
             [
-                'name' => 'UAB Pay',
-                'image' => 'uab_pay.png',
+                'name' => 'Government Savings Bank(GSB)',
+                'image' => 'GSB.png',
             ],
             [
-                'name' => 'Wave Pay',
-                'image' => 'wave.png',
+                'name' => 'Bank of Ayudhya (BAY)',
+                'image' => 'BAY.png',
             ],
             [
-                'name' => 'Yoma Banking',
-                'image' => 'yoma_banking.png',
-            ]
+                'name' => 'Bank for Agriculture and Agricultural Cooperatives(BBAC)',
+                'image' => 'BBAC.png',
+            ],
+            [
+                'name' => 'Commerce International Merchant Bank(CIMB)',
+                'image' => 'CIMB.png',
+            ],
+            [
+                'name' => 'True Money Wallet',
+                'image' => 'truemoney.png',
+            ],
         ];
 
         DB::table('payment_types')->insert($types);
     }
+
 }

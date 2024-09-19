@@ -21,7 +21,11 @@ class AgentResource extends JsonResource
             'phone' => $this->phone,
             'email' => $this->email,
             'agent_logo' => asset('assets/img/sitelogo/'.$this->agent_logo),
-            'line_id' => $this->line_id,
+            'payment_type_id' => $this->payment_type_id,
+            'payment_type_name' => $this->paymentType->name,
+            'account_number' => $this->account_number,
+            'account_name' => $this->account_name,
+            'line_id' => $this->line_id
         ];
     }
 }

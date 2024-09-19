@@ -76,8 +76,9 @@ class PlayerController extends Controller
             '403 Forbidden |You cannot  Access this page because you do not have permission'
         );
         $player_name = $this->generateRandomString();
+        $paymentTypes = PaymentType::all();
 
-        return view('admin.player.create', compact('player_name'));
+        return view('admin.player.create', compact('player_name', 'paymentTypes'));
     }
 
     /**
@@ -85,7 +86,7 @@ class PlayerController extends Controller
      */
     public function store(PlayerRequest $request)
     {
-        Gate::allows('player_store');
+        Gate::allows('player_create');
 
         $agent = Auth::user();
         $inputs = $request->validated();
@@ -104,6 +105,9 @@ class PlayerController extends Controller
                 'user_name' => $inputs['user_name'],
                 'password' => Hash::make($inputs['password']),
                 'phone' => $inputs['phone'],
+                'payment_type_id' => $inputs['payment_type_id'],
+                'account_name' => $inputs['account_name'],
+                'account_number' => $inputs['account_number'],
                 'agent_id' => $agent->id,
                 'type' => UserType::Player,
             ]);
@@ -120,12 +124,11 @@ class PlayerController extends Controller
                 ->with('password', $request->password)
                 ->with('username', $user->user_name);
         } catch (\Exception $e) {
-            Log::error('Error creating user: ' . $e->getMessage());
+            Log::error('Error creating user: '.$e->getMessage());
 
             return redirect()->back()->with('error', 'An error occurred while creating the player.');
         }
     }
-
 
     /**
      * Display the specified resource.
@@ -153,8 +156,9 @@ class PlayerController extends Controller
             Response::HTTP_FORBIDDEN,
             '403 Forbidden |You cannot  Access this page because you do not have permission'
         );
+        $paymentTypes = PaymentType::all();
 
-        return response()->view('admin.player.edit', compact('player'));
+        return response()->view('admin.player.edit', compact('player', 'paymentTypes'));
     }
 
     /**
@@ -238,7 +242,7 @@ class PlayerController extends Controller
                 return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
             }
 
-            app(WalletService::class)->transfer($agent, $player, $request->validated('amount'), TransactionName::CreditTransfer, ['note' => $request->note]);
+            app(WalletService::class)->transfer($agent, $player, $request->validated('amount'), TransactionName::CreditTransfer);
 
             return redirect()->back()
                 ->with('success', 'CashIn submitted successfully!');
@@ -279,7 +283,7 @@ class PlayerController extends Controller
                 return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
             }
 
-            app(WalletService::class)->transfer($player, $agent, $request->validated('amount'), TransactionName::DebitTransfer, ['note' => $request->note]);
+            app(WalletService::class)->transfer($player, $agent, $request->validated('amount'), TransactionName::DebitTransfer);
 
             return redirect()->back()
                 ->with('success', 'CashOut submitted successfully!');

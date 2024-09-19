@@ -64,11 +64,16 @@ class AuthController extends Controller
             return $this->error('', 'Already Exist Account for this number', 401);
         }
 
+        $inputs = $request->validated();
+
         $user = User::create([
             'phone' => $request->phone,
             'name' => $request->name,
             'user_name' => $this->generateRandomString(),
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($inputs['password']),
+            'payment_type_id' => $request->payment_type_id,
+            'account_name' => $request->account_name,
+            'account_number' => $request->account_number,
             'agent_id' => $agent->id,
             'type' => UserType::Player,
         ]);
@@ -153,7 +158,7 @@ class AuthController extends Controller
         return 'SB'.$randomNumber;
     }
 
-    private function isExistingUserForAgent($phone, $agent_id)
+    private function isExistingUserForAgent($phone, $agent_id): bool
     {
         return User::where('phone', $phone)->where('agent_id', $agent_id)->first();
     }

@@ -46,7 +46,13 @@ class User extends Authenticatable implements Wallet
         'status',
         'type',
         'is_changed_password',
-        'referral_code'
+        'referral_code',
+        'agent_logo',
+        'payment_type_id',
+        'account_number',
+        'account_name',
+        'line_id',
+        'commission',
     ];
 
     protected $dispatchesEvents = [
@@ -183,21 +189,15 @@ class User extends Authenticatable implements Wallet
         return $this->belongsTo(User::class, 'agent_id');
     }
 
+    public  function paymentType()
+    {
+        return $this->belongsTo(PaymentType::class,'payment_type_id');
+    }
+
     public function reports()
     {
         return $this->hasMany(Report::class, 'agent_id');
     }
-
-    public function banks(): HasMany
-    {
-        return $this->hasMany(Bank::class, 'agent_id');
-    }
-
-    public function transactions(): MorphMany
-    {
-        return $this->morphMany(Transaction::class, 'payable');
-    }
-
 
 
 }

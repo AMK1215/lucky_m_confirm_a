@@ -2,26 +2,24 @@
 
 namespace App\Http\Controllers\Admin\Agent;
 
+use Exception;
+use Carbon\Carbon;
+use App\Models\User;
+use App\Enums\UserType;
+use App\Models\PaymentType;
+use Illuminate\Http\Request;
 use App\Enums\TransactionName;
 use App\Enums\TransactionType;
-use App\Enums\UserType;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\AgentRequest;
-use App\Http\Requests\TransferLogRequest;
-use App\Models\Admin\TransferLog;
-use App\Models\PaymentType;
-use App\Models\User;
 use App\Services\WalletService;
-use Carbon\Carbon;
-use Exception;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Admin\TransferLog;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\AgentRequest;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\TransferLogRequest;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -32,12 +30,13 @@ class AgentController extends Controller
      */
     private const AGENT_ROLE = 2;
 
-    public function index(): View
+    public function index()
     {
-        if (! Gate::allows('agent_index')) {
-            abort(403);
-        }
-
+        abort_if(
+            Gate::denies('agent_index'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
         //kzt
         $users = User::with('roles')
             ->whereHas('roles', function ($query) {
@@ -54,12 +53,13 @@ class AgentController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create()
     {
-        if (! Gate::allows('agent_create')) {
-            abort(403);
-        }
-
+        abort_if(
+            Gate::denies('agent_create'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
         $agent_name = $this->generateRandomString();
         $referral_code = $this->generateReferralCode();
         $paymentTypes = PaymentType::all();
@@ -69,15 +69,14 @@ class AgentController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @throws ValidationException
      */
-    public function store(AgentRequest $request): RedirectResponse
+    public function store(AgentRequest $request)
     {
-        if (! Gate::allows('agent_create')) {
-            abort(403);
-        }
-
+        abort_if(
+            Gate::denies('agent_create'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
         $master = Auth::user();
         $inputs = $request->validated();
 
@@ -87,16 +86,31 @@ class AgentController extends Controller
             ]);
         }
         $transfer_amount = $inputs['amount'];
-        $userPrepare = array_merge(
-            $inputs,
-            [
-                'password' => Hash::make($inputs['password']),
-                'agent_id' => Auth::id(),
-                'type' => UserType::Admin,
-            ]
-        );
 
-        $agent = User::create($userPrepare);
+        if ($request->hasFile('agent_logo')) {
+            $image = $request->file('agent_logo');
+            $ext = $image->getClientOriginalExtension();
+            $filename = uniqid('logo_') . '.' . $ext;
+            $image->move(public_path('assets/img/sitelogo/'), $filename);
+            $request->agent_logo = $filename;
+        }
+
+        $agent = User::create([
+            'user_name' => $request->user_name,
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'password' => Hash::make($inputs['password']),
+            'agent_id' => Auth::id(),
+            'type' => UserType::Agent,
+            'agent_logo' => $request->agent_logo,
+            'referral_code' => $request->referral_code,
+            'line_id' => $request->line_id,
+            'payment_type_id' => $request->payment_type_id,
+            'account_name' => $request->account_name,
+            'account_number' => $request->account_number,
+            'commission' => $request->commission ??  0.00
+        ]);
+
         $agent->roles()->sync(self::AGENT_ROLE);
 
         if (isset($inputs['amount'])) {
@@ -111,13 +125,31 @@ class AgentController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        abort_if(
+            Gate::denies('agent_show'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
+
+        $user_detail = User::find($id);
+
+        return view('admin.agent.show', compact('user_detail'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id): View
+    public function edit(string $id)
     {
-        if (! Gate::allows('agent_edit')) {
-            abort(403);
-        }
+        abort_if(
+            Gate::denies('agent_edit') || ! $this->ifChildOfParent(request()->user()->id, $id),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
 
         $agent = User::find($id);
         $paymentTypes = PaymentType::all();
@@ -128,17 +160,28 @@ class AgentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id): RedirectResponse
+    public function update(Request $request, string $id)
     {
-        if (! Gate::allows('agent_edit')) {
-            abort(403);
-        }
-
         $param = $request->validate([
-            'name' => ['required', 'string', 'unique:users,name,'.$id],
+            'name' => 'required|string',
+            'phone' => ['nullable', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'unique:users,phone,'.$id],
+            'payment_type_id' => 'required|exists:payment_types,id',
+            'account_number' => 'required|string',
+            'account_name' => 'required|string',
+            'line_id' => 'nullable',
+            'commission' => 'nullable'
         ]);
 
         $user = User::find($id);
+        if($request->file('agent_logo'))
+        {
+            File::delete(public_path('assets/img/sitelogo/'.$user->agent_logo));
+            $image = $request->file('agent_logo');
+            $ext = $image->getClientOriginalExtension();
+            $filename = uniqid('agent_logo').'.'.$ext;
+            $image->move(public_path('assets/img/sitelogo/'), $filename);
+            $param['agent_logo'] = $filename;
+        }
 
         $user->update($param);
 
@@ -149,32 +192,41 @@ class AgentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function getCashIn(string $id): View
+    public function getCashIn(string $id)
     {
-        if (! Gate::allows('make_transfer')) {
-            abort(403);
-        }
+        abort_if(
+            Gate::denies('make_transfer'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
+
         $agent = User::find($id);
 
         return view('admin.agent.cash_in', compact('agent'));
     }
 
-    public function getCashOut(string $id): View
+    public function getCashOut(string $id)
     {
-        if (! Gate::allows('make_transfer')) {
-            abort(403);
-        }
+        abort_if(
+            Gate::denies('make_transfer'),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
+
         // Assuming $id is the user ID
         $agent = User::findOrFail($id);
 
         return view('admin.agent.cash_out', compact('agent'));
     }
 
-    public function makeCashIn(TransferLogRequest $request, $id): RedirectResponse
+    public function makeCashIn(TransferLogRequest $request, $id)
     {
-        if (! Gate::allows('make_transfer')) {
-            abort(403);
-        }
+
+        abort_if(
+            Gate::denies('make_transfer') || ! $this->ifChildOfParent(request()->user()->id, $id),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
 
         try {
             $inputs = $request->validated();
@@ -186,7 +238,7 @@ class AgentController extends Controller
             }
 
             // Transfer money
-            app(WalletService::class)->transfer($admin, $agent, $request->validated('amount'), TransactionName::CreditTransfer, ['note' => $request->note]);
+            app(WalletService::class)->transfer($admin, $agent, $request->validated('amount'), TransactionName::CreditTransfer);
 
             return redirect()->back()->with('success', 'Money fill request submitted successfully!');
         } catch (Exception $e) {
@@ -197,11 +249,14 @@ class AgentController extends Controller
         }
     }
 
-    public function makeCashOut(TransferLogRequest $request, string $id): RedirectResponse
+    public function makeCashOut(TransferLogRequest $request, string $id)
     {
-        if (! Gate::allows('make_transfer')) {
-            abort(403);
-        }
+
+        abort_if(
+            Gate::denies('make_transfer') || ! $this->ifChildOfParent(request()->user()->id, $id),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
 
         try {
             $inputs = $request->validated();
@@ -216,7 +271,7 @@ class AgentController extends Controller
             }
 
             // Transfer money
-            app(WalletService::class)->transfer($agent, $admin, $request->validated('amount'), TransactionName::DebitTransfer, ['note' => $request->note]);
+            app(WalletService::class)->transfer($agent, $admin, $request->validated('amount'), TransactionName::DebitTransfer);
 
             return redirect()->back()->with('success', 'Money fill request submitted successfully!');
         } catch (Exception $e) {
@@ -229,6 +284,7 @@ class AgentController extends Controller
         // Redirect back with a success message
         return redirect()->back()->with('success', 'Money fill request submitted successfully!');
     }
+
 
     public function getTransferDetail($id)
     {
@@ -251,14 +307,23 @@ class AgentController extends Controller
         return 'LKM'.$randomNumber;
     }
 
-    public function banAgent($id): RedirectResponse
+    public function banAgent($id)
     {
+        abort_if(
+            ! $this->ifChildOfParent(request()->user()->id, $id),
+            Response::HTTP_FORBIDDEN,
+            '403 Forbidden |You cannot  Access this page because you do not have permission'
+        );
+
         $user = User::find($id);
         $user->update(['status' => $user->status == 1 ? 0 : 1]);
+        if (Auth::check() && Auth::id() == $id) {
+            Auth::logout();
+        }
 
         return redirect()->back()->with(
             'success',
-            'User '.($user->status == 1 ? 'activate' : 'inactive').' successfully'
+            'User '.($user->status == 1 ? 'activated' : 'banned').' successfully'
         );
     }
 
@@ -298,8 +363,7 @@ class AgentController extends Controller
             ->with('username', $agent->user_name);
     }
 
-    private function generateReferralCode($length = 8)
-    {
+    private function generateReferralCode($length = 8) {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
         $randomString = '';
@@ -311,10 +375,10 @@ class AgentController extends Controller
         return $randomString;
     }
 
+
     public function showAgentLogin($id)
     {
         $agent = User::findOrFail($id);
-
         return view('auth.agent_login', compact('agent'));
     }
 
@@ -326,7 +390,7 @@ class AgentController extends Controller
             ->where('transactions.type', 'deposit')
             ->where('transactions.name', 'credit_transfer')
             ->where('agents.id', '<>', 1) // Exclude agent_id 1
-            ->groupBy('agents.id', 'players.id', 'agents.name', 'players.name', 'agents.commission')
+            ->groupBy('agents.id', 'players.id','agents.name','players.name','agents.commission')
             ->select(
                 'agents.id as agent_id',
                 'agents.name as agent_name',
@@ -427,6 +491,7 @@ class AgentController extends Controller
         return view('admin.agent.agent_report_index', compact('agentReports'));
     }
 
+
     public function AgentWinLoseDetails($agent_id, $month)
     {
         $details = DB::table('reports')
@@ -445,36 +510,36 @@ class AgentController extends Controller
         return view('admin.agent.win_lose_details', compact('details'));
     }
 
-    // public function AuthAgentWinLoseReport()
-    // {
-    //     $agentId = Auth::user()->id;  // Get the authenticated user's agent_id
-    //     //dd($agentId); auth_win_lose_details
+// public function AuthAgentWinLoseReport()
+// {
+//     $agentId = Auth::user()->id;  // Get the authenticated user's agent_id
+//     //dd($agentId); auth_win_lose_details
 
-    //     $agentReports = DB::table('reports')
-    //         ->join('users', 'reports.agent_id', '=', 'users.id')
-    //         ->select(
-    //             'reports.agent_id',
-    //             'reports.agent_commission',  // Select without summing
-    //             'users.name as agent_name',
-    //             'users.commission as agent_comm',
-    //             DB::raw('COUNT(DISTINCT reports.id) as qty'),
-    //             DB::raw('SUM(reports.bet_amount) as total_bet_amount'),
-    //             DB::raw('SUM(reports.valid_bet_amount) as total_valid_bet_amount'),
-    //             DB::raw('SUM(reports.payout_amount) as total_payout_amount'),
-    //             DB::raw('SUM(reports.commission_amount) as total_commission_amount'),
-    //             DB::raw('SUM(reports.jack_pot_amount) as total_jack_pot_amount'),
-    //             DB::raw('SUM(reports.jp_bet) as total_jp_bet'),
-    //             //DB::raw('SUM(reports.agent_commission) as total_agent_commission'),
-    //             DB::raw('(SUM(reports.payout_amount) - SUM(reports.valid_bet_amount)) as win_or_lose'),
-    //             DB::raw('COUNT(*) as stake_count'),
-    //             DB::raw('DATE_FORMAT(reports.created_at, "%Y %M") as report_month_year')  // Adding year and month name
-    //         )
-    //         ->where('reports.agent_id', $agentId)  // Filter by authenticated user's agent_id
-    //         ->groupBy('reports.agent_id', 'users.name', 'users.commission', 'reports.agent_commission', 'report_month_year')  // Grouping by year and month
-    //         ->get();
+//     $agentReports = DB::table('reports')
+//         ->join('users', 'reports.agent_id', '=', 'users.id')
+//         ->select(
+//             'reports.agent_id',
+//             'reports.agent_commission',  // Select without summing
+//             'users.name as agent_name',
+//             'users.commission as agent_comm',
+//             DB::raw('COUNT(DISTINCT reports.id) as qty'),
+//             DB::raw('SUM(reports.bet_amount) as total_bet_amount'),
+//             DB::raw('SUM(reports.valid_bet_amount) as total_valid_bet_amount'),
+//             DB::raw('SUM(reports.payout_amount) as total_payout_amount'),
+//             DB::raw('SUM(reports.commission_amount) as total_commission_amount'),
+//             DB::raw('SUM(reports.jack_pot_amount) as total_jack_pot_amount'),
+//             DB::raw('SUM(reports.jp_bet) as total_jp_bet'),
+//             //DB::raw('SUM(reports.agent_commission) as total_agent_commission'),
+//             DB::raw('(SUM(reports.payout_amount) - SUM(reports.valid_bet_amount)) as win_or_lose'),
+//             DB::raw('COUNT(*) as stake_count'),
+//             DB::raw('DATE_FORMAT(reports.created_at, "%Y %M") as report_month_year')  // Adding year and month name
+//         )
+//         ->where('reports.agent_id', $agentId)  // Filter by authenticated user's agent_id
+//         ->groupBy('reports.agent_id', 'users.name', 'users.commission', 'reports.agent_commission', 'report_month_year')  // Grouping by year and month
+//         ->get();
 
-    //     return view('admin.agent.auth_agent_report_index', compact('agentReports'));
-    // }
+//     return view('admin.agent.auth_agent_report_index', compact('agentReports'));
+// }
 
     public function AuthAgentWinLoseReport(Request $request)
     {
@@ -530,6 +595,9 @@ class AgentController extends Controller
 
         return view('admin.agent.auth_win_lose_details', compact('details'));
     }
+
+
+
 }
 
 /*

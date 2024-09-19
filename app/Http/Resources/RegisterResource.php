@@ -18,8 +18,12 @@ class RegisterResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'phone' => $this->phone,
+            'email' => $this->email,
             'balance' => $this->balanceFloat,
             'status' => $this->status,
+            'account_name' => $this->account_name,
+            'account_number' => $this->account_number,
+            'payment_type_id' => $this->payment_type_id
         ];
 
         return [
