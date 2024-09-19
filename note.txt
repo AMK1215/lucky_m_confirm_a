@@ -1,0 +1,51 @@
+// to remove laravel log
+php -r "file_put_contents('/var/www/html/bossi_a/storage/logs/laravel.log', '');"
+// created dev branch for kzt
+
+tail -f /var/www/html/bossi_a/storage/logs/laravel.log
+
+crontab -e
+
+* * * * * cd /var/www/html/bossi_a && php artisan schedule:run >> /dev/null 2>&1
+
+
+php artisan make:migration add_agent_link_to_users_table --table=users
+
+// to add column 
+ALTER TABLE transactions
+ADD COLUMN agent_id INT(11) AFTER name;
+
+
+sudo chmod -R 775 /var/www/html/bossi_a/storage/logs/
+sudo chown -R www-data:www-data /var/www/html/bossi_a/storage/logs
+
+
+bossi ပြင်ရန် lists
+
+1.Deposit Requested Lists တွင်  All,Approved,Pending,Rejected fiterထည်ံရန်။Created at တွင် date အပြင် Time ပါ ပါရန်။ နောက်ဆုံးrequest ဝင်လာတဲ့ဟာက အပေါ်ဆုံးမှာဖစ်နေရန်။ အဲ့ pageတွင်ဘဲ refresh buttonကိုထည့်ပေးရန်။
+2.Deposit Requested Lists Detailတွင် image ကို ဘယ်ဘက်မှာထားရန်။informationတွေကိုညာဘက်မှာထားရန် အဲ့ဘက်တွင်ဘဲ transaction idနောက်ဆုံး6လုံးနဲ့ date timeကိုပါထည့်ပေးရန်။ accept / reject button များကိုပါတစ်ခါတည်းထည့်ပေးရန်။
+3.Withdraw Requested Lists တွင်  All,Approved,Pending,Rejected fiterထည်ံရန်။Created at တွင် date အပြင် Time ပါ ပါရန်။ နောက်ဆုံးrequest ဝင်လာတဲ့ဟာက အပေါ်ဆုံးမှာဖစ်နေရန်။ အဲ့ pageတွင်ဘဲ refresh buttonကိုထည့်ပေးရန်။
+4.Dashboardတစ်ခုလုံးကို light version ပြောင်းရန်။
+5.balance တွေအကုန်လုံးကို 0သုံလုံးတစ်ဖြတ် "," ဖြတ်ပေးပါ။
+6.siteတစ်ခုလုံးရှိ  Deposit / Withdraw balance များကို Depositဆို အစိမ်းရောင် withdraw ဆိုအနီရောင်ဖြင့်ပြပေးရန်။
+7.balance ကို  header တွင်ထပ်ထည့်ရန်။ ဘယ် pageရောက်ရောက်headerတွင်balanceကိုကြည့်လိုရရန်။
+8.agentများရဲ့ ReferralCode ကို admin ကိုယ်တိုင်သတ်မှတ်ပေးလိုရရန်။ 
+# Set the ownership of the entire project directory to www-data user and group
+chown -R www-data:www-data /var/www/html/bossi_a
+
+# Set directory permissions to allow access
+chmod -R 755 /var/www/html/bossi_a
+
+# Ensure storage directory is owned by www-data
+sudo chown -R www-data:www-data /var/www/html/bossi_a/storage
+
+# Ensure bootstrap cache directory is owned by www-data
+sudo chown -R www-data:www-data /var/www/html/bossi_a/bootstrap/cache
+
+# Set correct permissions for storage directory
+sudo chmod -R 775 /var/www/html/bossi_a/storage
+
+# Set correct permissions for bootstrap cache directory
+sudo chmod -R 775 /var/www/html/bossi_a/bootstrap/cache
+ls -al /var/www/html/bossi_a
+sudo systemctl restart nginx
