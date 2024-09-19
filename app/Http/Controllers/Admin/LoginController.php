@@ -20,7 +20,7 @@ class LoginController extends Controller
 
     public function login(LoginRequest $request)
     {
-        $user = User::where('name', $request->name)->first();
+        $user = User::where('user_name', $request->user_name)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return back()->with('error', 'Invalid credentials. Please try again.');
@@ -30,7 +30,7 @@ class LoginController extends Controller
             return view('auth.passwords.index', compact('user'));
         }
 
-        if (Auth::attempt($request->only('name', 'password'))) {
+        if (Auth::attempt($request->only('user_name', 'password'))) {
             // Check for unauthorized roles
             if ($request->user()->hasRole('Player')) {
                 return redirect()->back()->with('error', 'You do not have permissions');
