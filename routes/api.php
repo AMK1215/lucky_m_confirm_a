@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\Webhook\GetBalanceController;
 use App\Http\Controllers\Api\V1\Webhook\JackPotController;
 use App\Http\Controllers\Api\V1\Webhook\MobileLoginController;
 use App\Http\Controllers\Api\V1\Webhook\PlaceBetController;
+use App\Http\Controllers\Api\V1\Webhook\RedisPlaceBetController;
 use App\Http\Controllers\Api\V1\Webhook\PushBetController;
 use App\Http\Controllers\Api\V1\Webhook\RollbackController;
 use App\Http\Controllers\TestController;
@@ -56,7 +57,7 @@ Route::group(['prefix' => 'Seamless'], function () {
     Route::post('GetGameList', [LaunchGameController::class, 'getGameList']);
     Route::post('GameResult', [GameResultController::class, 'gameResult']);
     Route::post('Rollback', [RollbackController::class, 'rollback']);
-    Route::post('PlaceBet', [PlaceBetController::class, 'placeBet']);
+    Route::post('PlaceBet', [RedisPlaceBetController::class, 'placeBet']);
     Route::post('CancelBet', [CancelBetController::class, 'cancelBet']);
     Route::post('BuyIn', [BuyInController::class, 'buyIn']);
     Route::post('BuyOut', [BuyOutController::class, 'buyOut']);
