@@ -34,11 +34,11 @@ class RedisPlaceBetController extends Controller
             Redis::setex('event:' . $request->getMessageID(), $ttl, json_encode($request->all()));
 
             // Log the event being cached
-            Log::info('Event cached in Redis', ['key' => 'event:' . $request->getMessageID(), 'value' => json_encode($request->all())]);
+            // Log::info('Event cached in Redis', ['key' => 'event:' . $request->getMessageID(), 'value' => json_encode($request->all())]);
 
             // Retrieve cached data from Redis
             $cachedData = Redis::get('event:' . $request->getMessageID());
-            Log::info('Redis get event', ['cachedData' => $cachedData]);
+            //Log::info('Redis get event', ['cachedData' => $cachedData]);
 
             // Convert cached data back to array
             $cachedDataArray = json_decode($cachedData, true);

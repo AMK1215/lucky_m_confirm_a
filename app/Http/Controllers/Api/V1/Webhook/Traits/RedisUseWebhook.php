@@ -27,10 +27,10 @@ trait RedisUseWebhook
         $ttl = 600; // Time-to-live (in seconds)
         Redis::setex('event:' . $request->getMessageID(), $ttl, json_encode($request->all()));
 
-        Log::info('Event cached in Redis with TTL', [
-            'key' => 'event:' . $request->getMessageID(),
-            'value' => json_encode($request->all())
-        ]);
+        // Log::info('Event cached in Redis with TTL', [
+        //     'key' => 'event:' . $request->getMessageID(),
+        //     'value' => json_encode($request->all())
+        // ]);
 
         // Store event in the database
         return SeamlessEvent::create([
