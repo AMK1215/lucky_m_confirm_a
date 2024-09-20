@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1\Webhook\Traits;
 
+use Exception;
 use App\Models\User;
 use App\Models\Wager;
-use App\Models\Admin\GameTypeProduct;
 use App\Enums\WagerStatus;
 use App\Models\Admin\Product;
 use App\Models\SeamlessEvent;
@@ -12,13 +12,15 @@ use App\Enums\TransactionName;
 use App\Models\Admin\GameType;
 use App\Services\WalletService;
 use App\Enums\TransactionStatus;
+use Illuminate\Support\Facades\DB;
 use App\Models\SeamlessTransaction;
-use Illuminate\Database\Eloquent\MassAssignmentException;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
-use App\Http\Requests\Slot\SlotWebhookRequest;
+use App\Models\Admin\GameTypeProduct;
+use Illuminate\Support\Facades\Redis;
 use App\Services\Slot\Dto\RequestTransaction;
-use Illuminate\Contracts\Support\Exception;
+use App\Http\Requests\Slot\SlotWebhookRequest;
+use Illuminate\Database\Eloquent\MassAssignmentException;
+
 trait RedisUseWebhook
 {
     public function createEvent(SlotWebhookRequest $request): SeamlessEvent
@@ -108,8 +110,21 @@ trait RedisUseWebhook
         return $seamless_transactions;
     }
 
+    // public function processTransfer(User $from, User $to, TransactionName $transactionName, float $amount, int $rate, array $meta)
+    // {
+    //     // Transfer the amount between wallets
+    //     app(WalletService::class)->transfer(
+    //         $from,
+    //         $to,
+    //         abs($amount),
+    //         $transactionName,
+    //         $meta
+    //     );
+    // }
+
     public function processTransfer(User $from, User $to, TransactionName $transactionName, float $amount, int $rate, array $meta)
-    {
+{
+    DB::transaction(function () use ($from, $to, $transactionName, $amount, $meta) {
         // Transfer the amount between wallets
         app(WalletService::class)->transfer(
             $from,
@@ -118,5 +133,7 @@ trait RedisUseWebhook
             $transactionName,
             $meta
         );
-    }
+    }, 5); // Retry 5 times in case of deadlock
+}
+
 }
