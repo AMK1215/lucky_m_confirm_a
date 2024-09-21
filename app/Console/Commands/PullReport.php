@@ -85,7 +85,7 @@ class PullReport extends Command
                 // if ($user && $user->agent_id) {
                 //     // Retrieve the agent's record using the agent_id from the player's record
                 //     $agent = User::where('id', $user->agent_id)->first();
-                    
+
                 //     if ($agent) {
                 //         $agent_commission = $agent->commission; // Get the agent's commission
                 //     } else {
@@ -99,14 +99,14 @@ class PullReport extends Command
 
                 $agent_commission = null; // Default value in case agent is not found
                 $user = User::where('user_name', $report['MemberName'])->first();
-                
+
                 if ($user && $user->agent_id) {
                     // Retrieve the agent's record using the agent_id from the player's record
                     $agent = User::where('id', $user->agent_id)->first();
-                    
+
                     if ($agent) {
                         $agent_commission = $agent->commission; // Get the agent's commission
-                        
+
                        $agentData = DB::table('reports')
                         ->join('users', 'reports.agent_id', '=', 'users.id')
                         ->where('reports.agent_id', $agent->id)
