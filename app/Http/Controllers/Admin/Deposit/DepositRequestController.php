@@ -14,63 +14,62 @@ use Illuminate\Support\Facades\Auth;
 
 class DepositRequestController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $deposits = DepositRequest::with(['user', 'bank', 'agent'])
-            ->where('agent_id', Auth::id())
-            ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
-                $query->where('status', $request->input('status'));
-            })
-            ->orderBy('id', 'desc')
-            ->get();
+        $deposits = DepositRequest::with(['user', 'paymentType', 'agent'])->where('agent_id', Auth::id())->orderBy('id', 'desc')->get();
 
         return view('admin.deposit_request.index', compact('deposits'));
     }
 
     public function statusChangeIndex(Request $request, DepositRequest $deposit)
-    {
-        try {
-            $agent = Auth::user();
-            $player = User::find($request->player);
+{
+    $request->validate([
+        'status' => 'required|in:0,1,2',
+        'amount' => 'required|numeric|min:0',
+        'player' => 'required|exists:users,id',
+    ]);
 
-            if ($request->status == 1 && $agent->balanceFloat < $request->amount) {
-                return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
-            }
+    try {
+        $agent = Auth::user();
+        $player = User::find($request->player);
 
-            $deposit->update([
-                'status' => $request->status,
-            ]);
-
-            if ($request->status == 1) {
-                app(WalletService::class)->transfer($agent, $player, $request->amount, TransactionName::DebitTransfer);
-            }
-
-            return redirect()->route('admin.agent.deposit')->with('success', 'Deposit status updated successfully!');
-        } catch (Exception $e) {
-            return back()->with('error', $e->getMessage());
+        // Check if the status is being approved and balance is sufficient
+        if ($request->status == 1 && $agent->balanceFloat < $request->amount) {
+            return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
         }
-    }
-
-    public function statusChangeReject(Request $request, DepositRequest $deposit)
-    {
-        $request->validate([
-            'status' => 'required|in:0,1,2',
+        // Update the deposit status
+        $deposit->update([
+            'status' => $request->status,
         ]);
 
-        try {
-            // Update the deposit status
-            $deposit->update([
-                'status' => $request->status,
-            ]);
-
-            return redirect()->route('admin.agent.deposit')->with('success', 'Deposit status updated successfully!');
-        } catch (Exception $e) {
-            return back()->with('error', $e->getMessage());
+        // Transfer the amount if the status is approved
+        if ($request->status == 1) {
+            app(WalletService::class)->transfer($agent, $player, $request->amount, TransactionName::DebitTransfer);
         }
-    }
 
-    public  function view(DepositRequest $deposit)
-    {
-        return view('admin.deposit_request.view', compact('deposit'));
+        return redirect()->route('admin.agent.deposit')->with('success', 'Deposit status updated successfully!');
+    } catch (Exception $e) {
+        return back()->with('error', $e->getMessage());
     }
+}
+
+    public function statusChangeReject(Request $request, DepositRequest $deposit)
+{
+    $request->validate([
+        'status' => 'required|in:0,1,2',
+    ]);
+
+    try {
+        // Update the deposit status
+        $deposit->update([
+            'status' => $request->status,
+        ]);
+
+        return redirect()->route('admin.agent.deposit')->with('success', 'Deposit status updated successfully!');
+    } catch (Exception $e) {
+        return back()->with('error', $e->getMessage());
+    }
+}
+
+
 }

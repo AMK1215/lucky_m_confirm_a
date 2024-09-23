@@ -13,27 +13,26 @@ use Illuminate\Support\Facades\Auth;
 
 class WithDrawRequestController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $withdraws = WithDrawRequest::where('agent_id', Auth::id())
-            ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
-                $query->where('status', $request->input('status'));
-            })
-            ->orderBy('id', 'desc')
-            ->get();
+        $withdraws = WithDrawRequest::with(['user'])->where('agent_id', Auth::id())->orderBy('id', 'desc')->get();
 
         return view('admin.withdraw_request.index', compact('withdraws'));
     }
 
     public function statusChangeIndex(Request $request, WithDrawRequest $withdraw)
     {
-        dd('here');
+        $request->validate([
+            'status' => 'required|in:0,1,2',
+            'amount' => 'required|numeric|min:0',
+            'player' => 'required|exists:users,id',
+        ]);
+
         try {
             $agent = Auth::user();
             $player = User::find($request->player);
-            dd('here');
 
-            if ($request->status == 1 && $agent->balanceFloat < $request->amount) {
+            if ($request->status == 1 && $agent->balance < $request->amount) {
                 return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
             }
 
@@ -67,4 +66,5 @@ class WithDrawRequestController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
+
 }
