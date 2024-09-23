@@ -60,7 +60,7 @@
               <td>
               <small class="badge bg-gradient-{{ $user->status == 1 ? 'success' : 'danger' }}">{{ $user->status == 1 ? "active" : "inactive" }}</small>
               </td>
-              <td>{{number_format($user->balanceFloat) }}</td>
+              <td>{{number_format($user->balanceFloat, 2) }}</td>
                 <td>{{ $user->created_at->setTimezone('Asia/Yangon')->format('d-m-Y H:i:s') }}</td>
               <td>
                 @if ($user->status == 1)
