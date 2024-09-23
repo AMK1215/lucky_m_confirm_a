@@ -98,6 +98,34 @@
 @endsection
 @section('scripts')
 <script src="{{ asset('admin_app/assets/js/plugins/datatables.js') }}"></script>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var errorMessage =  @json(session('error'));
+            var successMessage =  @json(session('success'));
+
+
+            @if(session()->has('success'))
+            Swal.fire({
+                icon: 'success',
+                title: successMessage,
+                text: '{{ session('
+      SuccessRequest ') }}',
+                background: 'hsl(230, 40%, 10%)',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            @elseif(session()->has('error'))
+            Swal.fire({
+                icon: 'error',
+                title: '',
+                text: errorMessage,
+                background: 'hsl(230, 40%, 10%)',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            @endif
+        });
+    </script>
 
 <script>
   if (document.getElementById('users-search')) {
