@@ -43,7 +43,7 @@ class ReportController extends Controller
             DB::raw('SUM(reports.payout_amount) as total_payout_amount'))
             ->groupBy('users.user_name', 'users.id', 'reports.agent_commission')
             ->when(isset($request->player_name), function ($query) use ($request) {
-                $query->whereBetween('reports.member_name', $request->player_name);
+                $query->where('reports.member_name', $request->player_name);
             })
             ->when(isset($request->fromDate) && isset($request->toDate), function ($query) use ($request) {
                 $query->whereBetween('reports.settlement_date', [$request->fromDate, $request->toDate]);

@@ -29,7 +29,7 @@
                             <i class="fas fa-coins"></i>
                         </div>
                         <div class="text-end pt-1">
-                            <p class="text-sm mb-0 text-capitalize">Deposit</p>
+                            <p class="text-sm mb-0 text-capitalize">TotalDeposit</p>
                             {{-- <h4 class="mb-0">{{ number_format($totalDeposit->amount/ 100, 2) }}</h4> --}}
                             <h4 class="mb-0">{{ $totalDeposit ? number_format(abs($totalDeposit) / 100, 2) : '0.00' }}</h4>
                         </div>
@@ -48,7 +48,7 @@
                             <i class="fas fa-coins"></i>
                         </div>
                         <div class="text-end pt-1">
-                            <p class="text-sm mb-0 text-capitalize ">WithDraw</p>
+                            <p class="text-sm mb-0 text-capitalize ">TotalWithDraw</p>
                             {{-- <h4 class="mb-0 ">{{ number_format(abs($totalWithdraw->amount)/ 100, 2) }}</h4> --}}
                             <h4 class="mb-0 ">
                                 {{ $totalWithdraw ? number_format(abs($totalWithdraw) / 100, 2) : '0.00' }}
@@ -148,7 +148,7 @@
             @endcan
         </div>
     </div>
-    @can('admin_access')
+    <!-- @can('admin_access')
         <div class="row gx-4 mt-4">
             <div class="col-md-6">
                 <div class="card">
@@ -171,7 +171,7 @@
                     </form>
                 </div>
             </div>
-            @endcan
+            @endcan -->
         </div>
         @endsection
         @section('scripts')

@@ -43,16 +43,9 @@
           <div>
             <h5 class="mb-0">Win/lose Report</h5>
           </div>
-          <div class="ms-auto my-auto mt-lg-0 mt-4">
-            <div class="ms-auto my-auto">
-              <button class="btn btn-outline-primary btn-sm export mb-0 mt-sm-0 mt-1" data-type="csv" type="button" name="button">Export</button>
-            </div>
-          </div>
 
         </div>
-      </div>
-      <div class="container">
-        <form>
+        <form action="{{route('admin.report.index')}}" method="ET">
           <div class="row">
             <div class="col-md-3">
               <div class="input-group input-group-static my-3">
@@ -68,14 +61,15 @@
             </div>
             <div class="col-md-3">
               <div class="input-group input-group-static my-3">
-                <label>Player</label>
+                <label>PlayerID</label>
                 <input type="text" class="form-control" id="player_name" name="player_name" value="{{Request::query('player_name')}}">
               </div>
             </div>
             <div class="col-md-3">
-              <button class="btn btn-sm btn-primary" id="search">Search</button>
+              <button class="btn btn-sm btn-primary" id="search" type="submit">Search</button>
+              <a href="{{route('admin.report.index')}}" class="btn  btn-sm btn-primary mt-5"><i class="fa fa-refresh"></i></a>
             </div>
-            
+          
         </form>
       </div>
     </div>
@@ -92,11 +86,11 @@
             <th rowspan="2" class="text-white">Action</th>
           </tr>
           <tr>
-                <th>Win/L</th>
-                <th>Comm</th>
-                <th>Total</th>
-                <th>Win/L</th>
-                <th>Total</th>
+                <th class="text-white">Win/L</th>
+                <th class="text-white">Comm</th>
+                <th class="text-white">Total</th>
+                <th class="text-white">Win/L</th>
+                <th class="text-white">Total</th>
             </tr>
         </thead>
         <tbody>
@@ -137,45 +131,9 @@
 <script src="{{ asset('admin_app/assets/js/plugins/datatables.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
 <script>
-  $(document).ready(function() {
-    $(document).on('click', '#search', function(event) {
-      event.preventDefault();
-      const fromDate = $('#fromDate').val();
-      const toDate = $('#toDate').val();
-      const playerName = $('#player_name').val();
-      const gameTypeId = $('.game-type-btn.active').data('id');
-      $('.game-type-btn').removeClass('btn_primary');
-      $('.game-type-btn[data-id="' + gameTypeId + '"]').addClass('btn_primary');
-      $.ajax({
-        url: "{{ route('admin.report.index') }}",
-        type: "GET",
-        data: {
-          fromDate: fromDate,
-          toDate: toDate,
-          playerName: playerName,
-          gameTypeId: gameTypeId,
-        },
-        success: function(response) {
-          console.log(response);
-        },
-        error: function(xhr, status, error) {
-          console.error(xhr.responseText);
-        },
-      });
-    });
-
-    $('.game-type-btn').on('click', function() {
-      $('.game-type-btn').removeClass('btn-primary');
-      $(this).addClass('btn-primary active');
-      var gameTypeId = $(this).data('id');
-    });
-
-  });
-</script>
-<script>
   if (document.getElementById('users-search')) {
     const dataTableSearch = new simpleDatatables.DataTable("#users-search", {
-      searchable: true,
+      searchable: false,
       fixedHeight: false,
       perPage: 7
     });

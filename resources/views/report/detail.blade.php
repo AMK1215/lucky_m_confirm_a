@@ -36,7 +36,7 @@
 
                         <div class="card-header">
                             <h5 class="mb-0">Win/Lose Detail Report</h5>
-                            <form action="" method="GET">
+                            <form action="{{route('admin.report.detail',$player->id)}}" method="GET">
                                 <input type="hidden" name="user_id" value="{{$player->id}}">
                                 <div class="row">
 
@@ -60,6 +60,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <button type="submit" class="btn btn-sm btn-primary mt-5">Search</button>
+                                        <a href="{{route('admin.report.detail',$player->id)}}" class="btn btn-sm btn-primary mt-5"><i class="fa fa-refresh"></i></a>
                                     </div>
                             </form>
                         </div>
