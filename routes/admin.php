@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\Player\PlayerController;
 use App\Http\Controllers\Admin\GameTypeProductController;
 use App\Http\Controllers\Admin\BannerAds\BannerAdsController;
 use App\Http\Controllers\Admin\Deposit\DepositRequestController;
+use App\Http\Controllers\Admin\GSCReportController;
 use App\Http\Controllers\Admin\TransferLog\TransferLogController;
 use App\Http\Controllers\Admin\WithDraw\WithDrawRequestController;
 
@@ -129,12 +130,17 @@ Route::group([
     Route::get('transer-log', [TransferLogController::class, 'index'])->name('transferLog');
     Route::get('transferlog/{id}', [TransferLogController::class, 'transferLog'])->name('transferLogDetail');
 
-    Route::group(['prefix' => 'report'], function () {
-        Route::get('index', [ReportController::class, 'index'])->name('report.index');
-        Route::get('view/{user_id}', [ReportController::class, 'view'])->name('report.view');
-        Route::get('show/{proudct_code}', [ReportController::class, 'show'])->name('report.show');
-        Route::get('detail/{user_id}', [ReportController::class, 'detail'])->name('report.detail');
-    });
+    Route::get('slot-win-lose', [GSCReportController::class, 'index'])->name('GscReport.index');
+    // web.php
+
+    Route::get('/win-lose/details/{product_name}', [GSCReportController::class, 'ReportDetails'])->name('Reportproduct.details');
+
+    // Route::group(['prefix' => 'report'], function () {
+    //     Route::get('index', [ReportController::class, 'index'])->name('report.index');
+    //     Route::get('view/{user_id}', [ReportController::class, 'view'])->name('report.view');
+    //     Route::get('show/{proudct_code}', [ReportController::class, 'show'])->name('report.show');
+    //     Route::get('detail/{user_id}', [ReportController::class, 'detail'])->name('report.detail');
+    // });
 
     Route::group(['prefix' => 'bonu'], function () {
         Route::get('countindex', [BonusController::class, 'index'])->name('bonu_count.index');

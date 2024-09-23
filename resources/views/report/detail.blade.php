@@ -7,7 +7,7 @@
     <link rel="apple-touch-icon" sizes="76x76" href="../../assets/img/apple-icon.png">
     <link rel="icon" type="image/png" href="../../assets/img/favicon.png">
     <title>
-        LucyM Slot
+        Bossi Slot
     </title>
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
     <!-- Nucleo Icons -->
@@ -36,7 +36,7 @@
 
                         <div class="card-header">
                             <h5 class="mb-0">Win/Lose Detail Report</h5>
-                            <form action="{{route('admin.report.detail',$player->id)}}" method="GET">
+                            <form action="" method="GET">
                                 <input type="hidden" name="user_id" value="{{$player->id}}">
                                 <div class="row">
 
@@ -60,7 +60,6 @@
                                     </div>
                                     <div class="col-md-3">
                                         <button type="submit" class="btn btn-sm btn-primary mt-5">Search</button>
-                                        <a href="{{route('admin.report.detail',$player->id)}}" class="btn btn-sm btn-primary mt-5"><i class="fa fa-refresh"></i></a>
                                     </div>
                             </form>
                         </div>
@@ -103,7 +102,7 @@
                                         <a href="https://prodmd.9977997.com/Report/BetDetail?agentCode=E820&WagerID={{ $detail->wager_id }}" target="_blank" style="color: blueviolet">{{ $detail->wager_id }}</a>
                                        </td> --}}
                                        <td>
-                                        <a href="https://prodmd.9977997.com/Report/BetDetail?agentCode=E829&WagerID={{ $detail->wager_id }}" target="_blank" style="color: blueviolet; text-decoration: underline;">{{ $detail->wager_id }}</a>
+                                        <a href="https://prodmd.9977997.com/Report/BetDetail?agentCode=E823&WagerID={{ $detail->wager_id }}" target="_blank" style="color: blueviolet; text-decoration: underline;">{{ $detail->wager_id }}</a>
                                         </td>
                                         <td class="text-sm font-weight-normal">{{$detail->product_name}}</td>
                                         <td class="text-sm font-weight-normal">{{$detail->game_list_name}}</td>
