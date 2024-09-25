@@ -98,7 +98,7 @@
                 data: 'wager_id',
                 name: 'wager_id',
                 render: function(data, type, row) {
-                    return `<a href="https://prodmd.9977997.com/Report/BetDetail?agentCode=E820&WagerID=${data}" target="_blank" style="color: blueviolet; text-decoration: underline;">${data}</a>`;
+                    return `<a href="https://prodmd.9977997.com/Report/BetDetail?agentCode=E829&WagerID=${data}" target="_blank" style="color: blueviolet; text-decoration: underline;">${data}</a>`;
                 }
             },
             {data: 'bet_amount', name: 'bet_amount'},
