@@ -5,6 +5,14 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <meta http-equiv="X-UA-Compatible" content="ie=edge">
  <title>Lucky M</title>
+ <script src="//code.jquery.com/jquery-1.12.3.js"></script>
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<script
+    src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
+<link rel="stylesheet"
+    href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet"
+    href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css">
 </head>
 <body>
  <style>
@@ -43,12 +51,10 @@
         background-color: #f1f1f1;
     }
 </style>
-<button><a href="{{ url('admin/agent-win-lose-report')}}">Back</a></button>
-<h1>Agent Detail Report for {{ $details->first()->agent_name }} ({{ \Carbon\Carbon::parse($details->first()->created_at)->format('F Y') }})</h1>
-
-
-<table class="table table-bordered">
-    <thead>
+<section>
+<h1>Agent Detail Report</h1>
+<table class="table table-bordered data-table">
+<thead>
         <tr>
             <th>Date</th>
             <th>WagerID</th>
@@ -62,24 +68,59 @@
             <th>Win/Lose</th>
         </tr>
     </thead>
-    <tbody>
-        @foreach ($details as $detail)
-        <tr>
-            <td>{{ $detail->created_at }}</td>
-            <td>
-             <a href="https://prodmd.9977997.com/Report/BetDetail?agentCode=E820&WagerID={{ $detail->wager_id }}" target="_blank" style="color: blueviolet; text-decoration: underline;">{{ $detail->wager_id }}</a>
-            </td>
-            <td>{{ $detail->bet_amount }}</td>
-            <td>{{ $detail->valid_bet_amount }}</td>
-            <td>{{ $detail->payout_amount }}</td>
-            <td>{{ $detail->commission_amount }}</td>
-            <td>{{ $detail->jack_pot_amount }}</td>
-            <td>{{ $detail->jp_bet }}</td>
-            <td>{{ $detail->agent_comm }} %</td>
-            <td>{{ $detail->win_or_lose }}</td>
-        </tr>
-        @endforeach
-    </tbody>
+
 </table>
+</section>
+
+   
+
+<script type="text/javascript">
+
+  $(function () {
+    var path = window.location.pathname;
+    
+    var id = path.split('/').pop();
+
+    var ajaxUrl = "{{ url('admin/agent/wldetails') }}/" + id;
+
+    var table = $('.data-table').DataTable({
+
+        processing: true,
+        serverSide: true,
+        pageLength: 20,
+        ajax: {
+            url: ajaxUrl
+        },
+        columns: [
+
+            {data: 'created_at', name: 'created_at'},
+            {
+                data: 'wager_id',
+                name: 'wager_id',
+                render: function(data, type, row) {
+                    return `<a href="https://prodmd.9977997.com/Report/BetDetail?agentCode=E820&WagerID=${data}" target="_blank" style="color: blueviolet; text-decoration: underline;">${data}</a>`;
+                }
+            },
+            {data: 'bet_amount', name: 'bet_amount'},
+
+            {data: 'valid_bet_amount', name: 'valid_bet_amount'},
+
+            {data: 'payout_amount', name: 'payout_amount'},
+
+            {data: 'commission_amount', name: 'commission_amount'},
+            
+            {data: 'jack_pot_amount', name: 'jack_pot_amount'},
+            {data: 'jp_bet', name: 'jp_bet'},
+            {data: 'agent_comm', name: 'agent_comm'},
+            {data: 'win_or_lose' , name: 'win_or_lose'}
+        ]
+
+    });
+
+    
+
+  });
+
+</script>
 </body>
 </html>

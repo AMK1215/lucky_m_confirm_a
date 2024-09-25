@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\TransferLogRequest;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
+use Yajra\DataTables\Contracts\DataTable;
+use Yajra\DataTables\Facades\DataTables;
 
 class AgentController extends Controller
 {
@@ -487,18 +489,17 @@ class AgentController extends Controller
         }
 
         $agentReports = $query->groupBy('reports.agent_id', 'users.name', 'report_month_year')->get();
-
+       
         return view('admin.agent.agent_report_index', compact('agentReports'));
     }
 
 
-    public function AgentWinLoseDetails($agent_id, $month)
+    public function AgentWinLoseDetails(Request $request, $agent_id)
     {
-        $details = DB::table('reports')
+        if ($request->ajax()) {
+            $details = DB::table('reports')
             ->join('users', 'reports.agent_id', '=', 'users.id')
             ->where('reports.agent_id', $agent_id)
-            ->whereMonth('reports.created_at', Carbon::parse($month)->month)
-            ->whereYear('reports.created_at', Carbon::parse($month)->year)
             ->select(
                 'reports.*',
                 'users.name as agent_name',
@@ -507,7 +508,12 @@ class AgentController extends Controller
             )
             ->get();
 
-        return view('admin.agent.win_lose_details', compact('details'));
+            return DataTables::of($details)
+                    ->make(true);
+
+        }
+
+        return view('admin.agent.win_lose_details');
     }
 
 // public function AuthAgentWinLoseReport()

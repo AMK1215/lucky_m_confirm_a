@@ -56,13 +56,13 @@
         <div class="card-body">
             <form method="GET" action="{{ route('admin.agent.AgentWinLose') }}">
                 <label for="start_date">Start Date:</label>
-                <input type="date" id="start_date" name="start_date" value="{{ request('start_date') }}">
+                <input type="date" id="start_date" name="start_date" value="{{ request('start_date') }}" class="from-control">
 
                 <label for="end_date">End Date:</label>
-                <input type="date" id="end_date" name="end_date" value="{{ request('end_date') }}">
+                <input type="date" id="end_date" name="end_date" value="{{ request('end_date') }}" class="from-control">
 
-                <label for="month_year">Month/Year:</label>
-                <input type="month" id="month_year" name="month_year" value="{{ request('month_year') }}">
+                <label for="member_name">MemberAccount</label>
+                <input type="month" id="member_name" name="member_name" value="{{ request('member_name') }}" class="from-control">
 
                 <button type="submit">Filter</button>
             </form>
@@ -71,8 +71,7 @@
     </div>
 
     <div class="mt-2">
-        {{-- <div class="col-md-12"> --}}
-            {{-- <div class="card mt-4"> --}}
+    
         <table>
         <thead>
             <tr>
@@ -181,7 +180,6 @@
             </tbody>
             </table>
             {{-- </div> --}}
-        {{-- </div> --}}
     </div>
 </body>
 </html>

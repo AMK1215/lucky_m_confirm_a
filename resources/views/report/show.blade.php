@@ -1,165 +1,147 @@
-@extends('admin_layouts.app')
-@section('styles')
-<style>
-  .transparent-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    outline: none;
-    cursor: pointer;
-    box-shadow: none;
-    appearance: none;
-    /* For some browsers */
-  }
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agent Monthly Report</title>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
+    <script src="//code.jquery.com/jquery-1.12.3.js"></script>
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<script
+    src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
+<link rel="stylesheet"
+    href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet"
+    href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .summary {
+            background-color: #ffffe0;
+            font-weight: bold;
+        }
+        .qty {
+            text-align: left;
+        }
+        .win {
+            color: green;
+        }
+        .lose {
+            color: red;
+        }
+    </style>
 
-  .active-button {
-    background-color: #e91e63;
-    /* or any color you prefer */
-    color: white;
-    /* optional: change text color if needed */
-  }
+</head>
+<body>
+    <section>
+    <h1 class="text-center">Win/Lose Report</h1>
 
-  #search {
-    margin-top: 40px;
-  }
-
-  #product {
-    background-color: #CCDDEB;
-    color: #e91e63;
-  }
-
-  #clear {
-    margin-top: 40px;
-  }
-</style>
-@endsection
-@section('content')
-<div class="row mt-4">
-  <div class="col-12">
     <div class="card">
-      <!-- Card header -->
-      <div class="card-header pb-0">
-        <div class="d-lg-flex">
-          <div>
-            <h5 class="mb-0">Win/lose Report</h5>
-          </div>
+
+        <div class="card-body dflex-row">
+            <form method="GET" action="{{ route('admin.report.index') }}">
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" value="{{ request('start_date') }}" >
+
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" value="{{ request('end_date') }}">
+
+                <label for="month_year">MemberAccount:</label>
+                <input type="text" id="text" name="member_name" value="{{ request('member_name') }}" >
+
+                <button type="submit">Filter</button>
+            </form>
 
         </div>
-        <form action="{{route('admin.report.index')}}" method="ET">
-          <div class="row">
-            <div class="col-md-3">
-              <div class="input-group input-group-static my-3">
-                <label>From</label>
-                <input type="date" class="form-control" id="fromDate" name="fromDate">
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="input-group input-group-static my-3">
-                <label>To</label>
-                <input type="date" class="form-control" id="toDate" name="toDate">
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="input-group input-group-static my-3">
-                <label>PlayerID</label>
-                <input type="text" class="form-control" id="player_name" name="player_name" value="{{Request::query('player_name')}}">
-              </div>
-            </div>
-            <div class="col-md-3">
-              <button class="btn btn-sm btn-primary" id="search" type="submit">Search</button>
-              <a href="{{route('admin.report.index')}}" class="btn  btn-sm btn-primary mt-5"><i class="fa fa-refresh"></i></a>
-            </div>
-          
-        </form>
-      </div>
     </div>
-    <div class="table-responsive">
-      <table class="table table-flush" id="users-search">
-        <thead class="thead-light bg-gradient-info">
-          <tr>
-            <th rowspan="2" class="text-white">PlayerId</th>
-            <th rowspan="2" class="text-white">Total Valid Bet</th>
-            <th rowspan="2" class="text-white">Total Bet</th>
-            <th rowspan="2" class="text-white">Total Payout</th>
-            <th colspan="3" class="text-white">Member W/L </th>
-            <th colspan="2" class="text-white">Agent W/L </th>
-            <th rowspan="2" class="text-white">Action</th>
-          </tr>
-          <tr>
-                <th class="text-white">Win/L</th>
-                <th class="text-white">Comm</th>
-                <th class="text-white">Total</th>
-                <th class="text-white">Win/L</th>
-                <th class="text-white">Total</th>
+<br>
+    <div class="mt-5">
+        <table class="mt-5">
+        <thead>
+            <tr>
+                <th rowspan="2">Account</th>
+                <th rowspan="2">Name</th>
+                <th rowspan="2">Bet Amount</th>
+                <th rowspan="2">Valid Amount</th>
+                <th rowspan="2">Stake Count</th>
+                <th rowspan="2">Gross Comm</th>
+                <th colspan="3">Member</th>
+                <th colspan="3">Downline</th>
+                <th colspan="3">Myself</th>
+                <th colspan="3">Upline</th>
+                <th colspan="3">Detail</th>
+            </tr>
+            <tr>
+                <th>W/L</th>
+                <th>Comm</th>
+                <th>Total</th>
+                <th>W/L</th>
+                <th>Comm</th>
+                <th>Total</th>
+                <th>W/L</th>
+                <th>Comm</th>
+                <th>Total</th>
+                <th>W/L</th>
+                <th>Comm</th>
+                <th>Total</th>
             </tr>
         </thead>
         <tbody>
-          @foreach ($reports as $rep)
-          <tr>
-            <td>{{ $rep->user_name}}</td>
-            <td>{{ $rep->total_valid_bet_amount}}</td>
-            <td>{{ $rep->total_bet_amount}}</td>
-            <td>{{ $rep->total_payout_amount}}</td>
-            @php
-              $result = $rep->total_payout_amount - $rep->total_valid_bet_amount;
-              $agentPercent = $result * $rep->agent_commission/100;
-            @endphp
-            @if($result > 0)
-            <td class="text-sm text-success font-weight-bold">{{$result}}</td>
-            @else
-            <td class="text-sm  font-weight-bold">{{$result}}</td>
-            @endif
-            <td class="text-sm font-weight-bold">{{$rep->total_commission_amount}}</td>
-            @if($result > 0)
-            <td class="text-sm text-success font-weight-bold">{{$rep->commission_amount+ $result}}</td>
-            @else
-            <td class="text-sm text-danger font-weight-bold">{{$rep->commission_amount + $result}}</td>
-            @endif          
-            <td class="text-sm font-weight-bold">{{$agentPercent}}</td>
-            <td class="text-sm font-weight-bold">{{$agentPercent}}</td>
-            <td><a href="{{route('admin.report.detail',$rep->user_id)}}" class="btn btn-sm btn-info">Detail</a></td>
-          </tr>
-          @endforeach
-        </tbody>
-      </table>
+            @foreach($agentReports as $report)
+                <tr>
+                    <td>{{ $report->user_name }}</td>
+                    <td>{{ $report->member_name }}</td>
+                    <td>{{ number_format($report->total_bet_amount, 2) }}</td>
+                    <td>{{ number_format($report->total_valid_bet_amount, 2) }}</td>
+                    <td>{{ $report->stake_count }}</td> <!-- Placeholder for stake count -->
+                    <td>0</td>
+                    
+                    <!-- Win/Loss for Member -->
+                    <td class="{{ $report->win_or_lose < 0 ? 'lose' : 'win' }}">
+                        {{ number_format($report->win_or_lose, 2) }}
+                    </td>
+                    <td>0 </td>
+                    <td>{{ number_format($report->win_or_lose + $report->total_commission_amount, 2) }}</td> <!-- Member Total -->
+                    
+                    <td>--</td> <!-- Downline W/L Placeholder -->
+                    <td>0</td> <!-- Downline Comm Placeholder -->
+                    <td>--</td> <!-- Downline Total Placeholder -->
+                    
+                    <!-- Win/Loss for Myself -->
+                    <td class="{{ $report->win_or_lose < 0 ? 'lose' : 'win' }}">
+                        {{ number_format($report->win_or_lose, 2) }}
+                    </td>
+                    <td>0</td> <!-- Myself Comm -->
+                    <td>{{ number_format($report->win_or_lose + $report->total_commission_amount, 2) }}</td> <!-- Myself Total -->
+                    
+                    <!-- Win/Loss for Upline -->
+                    <td class="{{ $report->win_or_lose < 0 ? 'lose' : 'win' }}">
+                        {{ number_format($report->win_or_lose, 2) }}
+                    </td>
+                    <td>0</td> <!-- Upline Comm -->
+                    <td>{{ number_format($report->win_or_lose + $report->total_commission_amount, 2) }}</td> <!-- Upline Total -->
+                    <td>
+                    <a href="{{ route('admin.report.detail', $report->user_name) }}" class="btn btn-info">
+                        View Detail
+                    </a>
+                    </td>
+                </tr>
+            @endforeach
+            
+            </tbody>
+            </table>
     </div>
-  </div>
-</div>
-</div>
-@endsection
-@section('scripts')
-<script src="{{ asset('admin_app/assets/js/plugins/datatables.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
-<script>
-  if (document.getElementById('users-search')) {
-    const dataTableSearch = new simpleDatatables.DataTable("#users-search", {
-      searchable: false,
-      fixedHeight: false,
-      perPage: 7
-    });
-
-    document.querySelectorAll(".export").forEach(function(el) {
-      el.addEventListener("click", function(e) {
-        var type = el.dataset.type;
-
-        var data = {
-          type: type,
-          filename: "material-" + type,
-        };
-
-        if (type === "csv") {
-          data.columnDelimiter = "|";
-        }
-
-        dataTableSearch.export(data);
-      });
-    });
-  };
-</script>
-<script>
-  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-  var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl)
-  })
-</script>
-@endsection
+    </section>
+</body>
+</html>

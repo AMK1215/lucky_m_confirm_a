@@ -1,182 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="apple-touch-icon" sizes="76x76" href="../../assets/img/apple-icon.png">
-    <link rel="icon" type="image/png" href="../../assets/img/favicon.png">
-    <title>
-        Bossi Slot
-    </title>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
-    <!-- Nucleo Icons -->
-    <link href="{{ asset('admin_app/assets/css/nucleo-icons.css')}}" rel="stylesheet" />
-    <link href="{{ asset('admin_app/assets/css/nucleo-svg.css')}}" rel="stylesheet" />
-    <!-- Font Awesome Icons -->
-    <script src="https://kit.fontawesome.com/b829c5162c.js" crossorigin="anonymous"></script>
-    <!-- Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <!-- CSS Files -->
-    <link id="pagestyle" href="{{ asset('admin_app/assets/css/material-dashboard.css?v=3.0.6')}}" rel="stylesheet" />
-
-    <script defer data-site="https://delightmyanmar.online" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
-
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta http-equiv="X-UA-Compatible" content="ie=edge">
+ <title>Lucky M</title>
+ <script src="//code.jquery.com/jquery-1.12.3.js"></script>
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+<script
+    src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
+<link rel="stylesheet"
+    href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet"
+    href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css">
 </head>
+<body>
+ <style>
+    h1 {
+        font-family: Arial, sans-serif;
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: bold;
+    }
 
-<body class="g-sidenav-show  bg-gray-200">
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
 
+    .table th, .table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
 
-    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
+    .table th {
+        background-color: #f2f2f2;
+        color: #333;
+        font-weight: bold;
+    }
 
-        <div class="container-fluid py-4">
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card">
+    .table tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
 
-                        <div class="card-header">
-                            <h5 class="mb-0">Win/Lose Detail Report</h5>
-                            <form action="" method="GET">
-                                <input type="hidden" name="user_id" value="{{$player->id}}">
-                                <div class="row">
+    .table tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+</style>
+<section>
+<h1>Player Detail Report</h1>
+<br>
+<table class="table table-bordered data-table">
+<thead>
+        <tr>
+            <th>Id</th>
+            <th>Date</th>
+            <th>Product</th>
+            <th>GameName</th>
+            <th>WagerID</th>
+            <th>Bet Amount</th>
+            <th>Valid Amount</th>
+            <th>Payout Amount</th>
+            <th>Win/Lose</th>
+        </tr>
+    </thead>
 
-                                    <div class="col-md-3">
-                                        <div class="input-group input-group-static my-3">
-                                            <label>Player</label>
-                                            <input type="text" class="form-control" id="" value="{{$player->user_name}}" name="player_name" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="input-group input-group-static my-3">
-                                            <label>From</label>
-                                            <input type="date" class="form-control" id="fromDate" name="fromDate">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="input-group input-group-static my-3">
-                                            <label>To</label>
-                                            <input type="date" class="form-control" id="to" name="toDate">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <button type="submit" class="btn btn-sm btn-primary mt-5">Search</button>
-                                    </div>
-                            </form>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-flush" id="datatable-basic">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Result
-                                            Time
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            WagerID
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Result
-                                            Product Type
-                                        </th>
-                                        
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Result
-                                            GameName
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Valid Bet
-                                            Amount
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bet
-                                            Amount
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            Payout Amount
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Win/Lose
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @if(count($report)>0)
-                                    @foreach ($report as $detail)
-                                    <tr>
-                                        <td class="text-sm font-weight-normal">{{$detail->settlement_date}}</td>
-                                       {{-- <td>
-                                        <a href="https://prodmd.9977997.com/Report/BetDetail?agentCode=E820&WagerID={{ $detail->wager_id }}" target="_blank" style="color: blueviolet">{{ $detail->wager_id }}</a>
-                                       </td> --}}
-                                       <td>
-                                        <a href="https://prodmd.9977997.com/Report/BetDetail?agentCode=E823&WagerID={{ $detail->wager_id }}" target="_blank" style="color: blueviolet; text-decoration: underline;">{{ $detail->wager_id }}</a>
-                                        </td>
-                                        <td class="text-sm font-weight-normal">{{$detail->product_name}}</td>
-                                        <td class="text-sm font-weight-normal">{{$detail->game_list_name}}</td>
-                                        <td class="text-sm font-weight-normal">{{$detail->valid_bet_amount}}</td>
-                                        <td class="text-sm font-weight-normal">{{$detail->bet_amount}}</td>
-                                        <td class="text-sm font-weight-normal">{{$detail->payout_amount}}</td>
-                                        @php
-                                        $result = $detail->payout_amount - $detail->bet_amount;
-                                        @endphp
-                                        @if($result > 0)
-                                        <td class="text-sm text-success font-weight-bold">{{$result}}</td>
-                                        @else
-                                        <td class="text-sm text-danger font-weight-bold">{{$result}}</td>
-                                        @endif
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                    @endif
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+</table>
+</section>
+<script type="text/javascript">
 
-        </div>
-    </main>
+  $(function () {
+    var path = window.location.pathname;
+    
+    var userName = path.split('/').pop();
+    var ajaxUrl = "{{ url('admin/report/detail') }}/" + userName;
+    var table = $('.data-table').DataTable({
 
-    <script src="https://kit.fontawesome.com/b829c5162c.js" crossorigin="anonymous"></script>
-    <script src="{{ asset('admin_app/assets/js/core/popper.min.js')}}"></script>
-    <script src="{{ asset('admin_app/assets/js/core/bootstrap.min.js')}}"></script>
-    <script src="{{ asset('admin_app/assets/js/plugins/perfect-scrollbar.min.js')}}"></script>
-    <script src="{{ asset('admin_app/assets/js/plugins/smooth-scrollbar.min.js')}}"></script>
-    <!-- Kanban scripts -->
-    <script src="{{ asset('admin_app/assets/js/plugins/dragula/dragula.min.js')}}"></script>
-    <script src="{{ asset('admin_app/assets/js/plugins/jkanban/jkanban.js')}}"></script>
-    <script src="{{ asset('admin_app/assets/js/plugins/chartjs.min.js')}}"></script>
-    <script src="{{ asset('admin_app/assets/js/plugins/world.js')}}"></script>
+        processing: true,
+        serverSide: true,
+        pageLength: 20,
+        ajax: {
+            url: ajaxUrl
+        },
+        columns: [
+            {data: 'DT_RowIndex', name: 'DT_RowIndex'},
 
-    <script>
-        var win = navigator.platform.indexOf('Win') > -1;
-        if (win && document.querySelector('#sidenav-scrollbar')) {
-            var options = {
-                damping: '0.5'
-            }
-            Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-        }
-    </script>
-    <!-- Github buttons -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <script src="{{ asset('admin_app/assets/js/plugins/datatables.js') }}"></script>
+            {data: 'created_at', name: 'created_at'
+            },
+            {data: 'product_name', name: 'product_name'},
+            {data: 'game_name', name: 'game_name'},
+            {
+                data: 'wager_id',
+                name: 'wager_id',
+                render: function(data, type, row) {
+                    return `<a href="https://prodmd.9977997.com/Report/BetDetail?agentCode=E820&WagerID=${data}" target="_blank" style="color: blueviolet; text-decoration: underline;">${data}</a>`;
+                }
+            },
+            {data: 'bet_amount', name: 'bet_amount'},
 
-    <script>
-        const dataTableBasic = new simpleDatatables.DataTable("#datatable-basic", {
-            searchable: false,
-            fixedHeight: true
-        });
+            {data: 'valid_bet_amount', name: 'valid_bet_amount'},
+            {data: 'payout_amount', name: 'payout_amount'},
+            {data: 'win_or_lose' , name: 'win_or_lose'},
+        ]
 
-        const dataTableSearch = new simpleDatatables.DataTable("#datatable-search", {
-            searchable: true,
-            fixedHeight: true
-        });
-    </script>
-    <script>
-        var win = navigator.platform.indexOf('Win') > -1;
-        if (win && document.querySelector('#sidenav-scrollbar')) {
-            var options = {
-                damping: '0.5'
-            }
-            Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-        }
-    </script>
+    });
 
+    
 
+  });
+
+</script>
 </body>
-
 </html>
