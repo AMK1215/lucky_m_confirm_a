@@ -19,6 +19,7 @@ use App\Services\Slot\Dto\RequestTransaction;
 use App\Http\Requests\Slot\SlotWebhookRequest;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\DB;
 
 trait UseWebhook
 {
@@ -48,13 +49,16 @@ trait UseWebhook
         $seamless_transactions = [];
 
         foreach ($requestTransactions as $requestTransaction) {
-            $wager = Wager::firstOrCreate(
-                ['seamless_wager_id' => $requestTransaction->WagerID],
-                [
-                    'user_id' => $event->user->id,
-                    'seamless_wager_id' => $requestTransaction->WagerID,
-                ]
-            );
+            DB::transaction(function () use (&$seamless_transactions, $event, $requestTransaction, $refund) {
+
+            $wager = Wager::where('seamless_wager_id', $requestTransaction->WagerID)
+                    ->lockForUpdate()
+                    ->firstOrCreate([
+                        'seamless_wager_id' => $requestTransaction->WagerID,
+                    ], [
+                        'user_id' => $event->user->id,
+                        'seamless_wager_id' => $requestTransaction->WagerID,
+                ]);
 
             if ($refund) {
                 $wager->update([
@@ -98,6 +102,8 @@ trait UseWebhook
                 'status' => $requestTransaction->Status,
                 //'agent_id' => $user->agent_id
             ]);
+        }, 3); // Retry 3 times if deadlock occurs
+
         }
 
         return $seamless_transactions;
