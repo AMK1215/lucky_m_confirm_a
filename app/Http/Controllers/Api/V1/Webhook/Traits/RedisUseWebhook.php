@@ -129,7 +129,7 @@ trait RedisUseWebhook
     {
         $retryCount = 3; // Number of retries for handling deadlocks
 
-        for ($attempt = 0; $attempt < $retryCount; $attempt++) {
+        //for ($attempt = 0; $attempt < $retryCount; $attempt++) {
 
         DB::transaction(function () use ($from, $to, $transactionName, $amount, $meta) {
             // Transfer the amount between wallets
@@ -142,5 +142,5 @@ trait RedisUseWebhook
             );
         }, 3); // Retry 5 times in case of deadlock
     }
-}
+//}
 }
