@@ -18,68 +18,6 @@ class PlaceBetRedisController extends Controller
 {
     use UseWebhookRedis;
 
-    // public function placeBet(SlotWebhookRequest $request)
-    // {
-    //     DB::beginTransaction();
-    //     try {
-    //         // Validate the request
-    //         $validator = $request->check();
-    //         if ($validator->fails()) {
-    //             return $validator->getResponse();
-    //         }
-
-    //         $before_balance = $request->getMember()->balanceFloat;
-
-    //         // Cache event in Redis
-    //         $ttl = 600; // Time-to-live in seconds
-    //         Redis::setex('event:' . $request->getMessageID(), $ttl, json_encode($request->all()));
-
-    //         // Retrieve cached data from Redis (optional)
-    //         $cachedData = Redis::get('event:' . $request->getMessageID());
-    //         $cachedDataArray = json_decode($cachedData, true);
-
-    //         // Create and store the event in the database
-    //         $event = $this->createEvent($request);
-
-    //         // Create wager transactions related to the event
-    //         $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event);
-
-    //         // Process each seamless transaction
-    //         foreach ($seamless_transactions as $seamless_transaction) {
-    //             $this->processTransfer(
-    //                 $request->getMember(),
-    //                 User::adminUser(),
-    //                 TransactionName::Stake,
-    //                 $seamless_transaction->transaction_amount,
-    //                 $seamless_transaction->rate,
-    //                 [
-    //                     'wager_id' => $seamless_transaction->wager_id,
-    //                     'event_id' => $request->getMessageID(),
-    //                     'seamless_transaction_id' => $seamless_transaction->id,
-    //                 ]
-    //             );
-    //         }
-
-    //         // Refresh balance after transactions
-    //         $request->getMember()->wallet->refreshBalance();
-    //         $after_balance = $request->getMember()->balanceFloat;
-
-    //         DB::commit();
-
-    //         // Return success response
-    //         return SlotWebhookService::buildResponse(
-    //             SlotWebhookResponseCode::Success,
-    //             $after_balance,
-    //             $before_balance
-    //         );
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         Log::error('Error during placeBet', ['error' => $e->getMessage()]);
-
-    //         return response()->json(['message' => $e->getMessage()], 500);
-    //     }
-    // }
-
     public function placeBet(SlotWebhookRequest $request)
     {
         DB::beginTransaction();
@@ -90,12 +28,15 @@ class PlaceBetRedisController extends Controller
                 return $validator->getResponse();
             }
 
-            $userId = $request->getMember()->id;
-            $before_balance = $this->getWalletBalance($userId); // Get balance from Redis or database
+            $before_balance = $request->getMember()->balanceFloat;
 
             // Cache event in Redis
             $ttl = 600; // Time-to-live in seconds
-            Redis::setex('event:'.$request->getMessageID(), $ttl, json_encode($request->all()));
+            Redis::setex('event:' . $request->getMessageID(), $ttl, json_encode($request->all()));
+
+            // Retrieve cached data from Redis (optional)
+            $cachedData = Redis::get('event:' . $request->getMessageID());
+            $cachedDataArray = json_decode($cachedData, true);
 
             // Create and store the event in the database
             $event = $this->createEvent($request);
@@ -117,13 +58,11 @@ class PlaceBetRedisController extends Controller
                         'seamless_transaction_id' => $seamless_transaction->id,
                     ]
                 );
-
-                // Update the wallet balance after each transaction
-                $this->updateWalletBalance($userId, -$seamless_transaction->transaction_amount); // Deduct amount
             }
 
             // Refresh balance after transactions
-            $after_balance = $this->getWalletBalance($userId); // Get updated balance
+            $request->getMember()->wallet->refreshBalance();
+            $after_balance = $request->getMember()->balanceFloat;
 
             DB::commit();
 
@@ -132,8 +71,6 @@ class PlaceBetRedisController extends Controller
                 SlotWebhookResponseCode::Success,
                 $after_balance,
                 $before_balance
-                //number_format($after_balance, 2, '.', ''), // Ensure two decimal places
-                //number_format($before_balance, 2, '.', '')  // Ensure two decimal places
             );
         } catch (\Exception $e) {
             DB::rollBack();
@@ -142,6 +79,69 @@ class PlaceBetRedisController extends Controller
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
+
+    // public function placeBet(SlotWebhookRequest $request)
+    // {
+    //     DB::beginTransaction();
+    //     try {
+    //         // Validate the request
+    //         $validator = $request->check();
+    //         if ($validator->fails()) {
+    //             return $validator->getResponse();
+    //         }
+
+    //         $userId = $request->getMember()->id;
+    //         $before_balance = $this->getWalletBalance($userId); // Get balance from Redis or database
+
+    //         // Cache event in Redis
+    //         $ttl = 600; // Time-to-live in seconds
+    //         Redis::setex('event:'.$request->getMessageID(), $ttl, json_encode($request->all()));
+
+    //         // Create and store the event in the database
+    //         $event = $this->createEvent($request);
+
+    //         // Create wager transactions related to the event
+    //         $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event);
+
+    //         // Process each seamless transaction
+    //         foreach ($seamless_transactions as $seamless_transaction) {
+    //             $this->processTransfer(
+    //                 $request->getMember(),
+    //                 User::adminUser(),
+    //                 TransactionName::Stake,
+    //                 $seamless_transaction->transaction_amount,
+    //                 $seamless_transaction->rate,
+    //                 [
+    //                     'wager_id' => $seamless_transaction->wager_id,
+    //                     'event_id' => $request->getMessageID(),
+    //                     'seamless_transaction_id' => $seamless_transaction->id,
+    //                 ]
+    //             );
+
+    //             // Update the wallet balance after each transaction
+    //             $this->updateWalletBalance($userId, -$seamless_transaction->transaction_amount); // Deduct amount
+    //         }
+
+    //         // Refresh balance after transactions
+    //         $after_balance = $this->getWalletBalance($userId); // Get updated balance
+
+    //         DB::commit();
+
+    //         // Return success response
+    //         return SlotWebhookService::buildResponse(
+    //             SlotWebhookResponseCode::Success,
+    //             $after_balance,
+    //             $before_balance
+    //             //number_format($after_balance, 2, '.', ''), // Ensure two decimal places
+    //             //number_format($before_balance, 2, '.', '')  // Ensure two decimal places
+    //         );
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error during placeBet', ['error' => $e->getMessage()]);
+
+    //         return response()->json(['message' => $e->getMessage()], 500);
+    //     }
+    // }
 
     /**
      * Get wallet balance, either from Redis or database.
