@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Redis;
 use App\Services\Slot\Dto\RequestTransaction;
 use App\Http\Requests\Slot\SlotWebhookRequest;
 use Illuminate\Database\Eloquent\MassAssignmentException;
-
+//use Exception;
 trait RedisUseWebhook
 {
     public function createEvent(SlotWebhookRequest $request): SeamlessEvent
