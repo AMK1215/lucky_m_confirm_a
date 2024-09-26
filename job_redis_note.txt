@@ -1,0 +1,27 @@
+php artisan queue:work
+php artisan queue:failed
+php artisan queue:retry all
+sudo supervisorctl status
+sudo apt-get update
+sudo apt-get install supervisor
+sudo nano /etc/supervisor/conf.d/laravel-worker.conf
+
+
+########
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/lucky_m_confirm_a/artisan queue:work --sleep=3 --tries=3
+autostart=true
+autorestart=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/www/lucky_m_confirm_a/storage/logs/worker.log
+#######
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start laravel-worker:*
+sudo supervisorctl status
+
+tail -f /var/www/lucky_m_confirm_a/storage/logs/worker.log
+
