@@ -130,8 +130,10 @@ class PlaceBetRedisController extends Controller
         // Return success response
         return SlotWebhookService::buildResponse(
             SlotWebhookResponseCode::Success,
-            $after_balance,
-            $before_balance
+            //$after_balance,
+            //$before_balance
+            number_format($after_balance, 2, '.', ''), // Ensure two decimal places
+            number_format($before_balance, 2, '.', '')  // Ensure two decimal places
         );
     } catch (\Exception $e) {
         DB::rollBack();
@@ -145,25 +147,45 @@ class PlaceBetRedisController extends Controller
     /**
      * Get wallet balance, either from Redis or database.
      */
+    // public function getWalletBalance($userId)
+    // {
+    //     $walletKey = "wallet_balance_user_{$userId}";
+
+    //     // Try to get the balance from Redis
+    //     $balance = Redis::get($walletKey);
+
+    //     if ($balance === null) {
+    //         // Fallback to MySQL if Redis doesn't have the balance
+    //         $wallet = DB::table('wallets')->where('holder_id', $userId)->first();
+    //         if ($wallet) {
+    //             $balance = $wallet->balance;
+    //             // Store balance in Redis with a TTL of 10 minutes
+    //             Redis::setex($walletKey, 600, $balance);
+    //         }
+    //     }
+
+    //     return $balance;
+    // }
+
     public function getWalletBalance($userId)
-    {
-        $walletKey = "wallet_balance_user_{$userId}";
+{
+    $walletKey = "wallet_balance_user_{$userId}";
 
-        // Try to get the balance from Redis
-        $balance = Redis::get($walletKey);
+    // Try to get the balance from Redis
+    $balance = Redis::get($walletKey);
 
-        if ($balance === null) {
-            // Fallback to MySQL if Redis doesn't have the balance
-            $wallet = DB::table('wallets')->where('holder_id', $userId)->first();
-            if ($wallet) {
-                $balance = $wallet->balance;
-                // Store balance in Redis with a TTL of 10 minutes
-                Redis::setex($walletKey, 600, $balance);
-            }
+    if ($balance === null) {
+        // Fallback to MySQL if Redis doesn't have the balance
+        $wallet = DB::table('wallets')->where('holder_id', $userId)->first();
+        if ($wallet) {
+            $balance = $wallet->balance;
+            // Store balance in Redis with a TTL of 10 minutes
+            Redis::setex($walletKey, 600, number_format($balance, 2, '.', '')); // Format for consistency
         }
-
-        return $balance;
     }
+
+    return (float)number_format($balance, 2, '.', ''); // Return as float
+}
 
     /**
      * Update wallet balance in Redis and queue a job to update in MySQL.
