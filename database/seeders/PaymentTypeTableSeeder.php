@@ -65,5 +65,4 @@ class PaymentTypeTableSeeder extends Seeder
 
         DB::table('payment_types')->insert($types);
     }
-
 }

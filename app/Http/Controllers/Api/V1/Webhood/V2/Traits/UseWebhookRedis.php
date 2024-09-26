@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers\Api\V1\Webhood\V2\Traits;
 
-use Exception;
-use App\Models\User;
-use App\Models\Wager;
+use App\Enums\TransactionName;
+use App\Enums\TransactionStatus;
 use App\Enums\WagerStatus;
+use App\Http\Requests\Slot\SlotWebhookRequest;
+use App\Models\Admin\GameType;
+use App\Models\Admin\GameTypeProduct;
 use App\Models\Admin\Product;
 use App\Models\SeamlessEvent;
-use App\Enums\TransactionName;
-use App\Models\Admin\GameType;
-use App\Services\WalletService;
-use App\Enums\TransactionStatus;
-use Illuminate\Support\Facades\DB;
 use App\Models\SeamlessTransaction;
-use App\Models\Admin\GameTypeProduct;
-use Illuminate\Support\Facades\Redis;
+use App\Models\User;
+use App\Models\Wager;
 use App\Services\Slot\Dto\RequestTransaction;
-use App\Http\Requests\Slot\SlotWebhookRequest;
+use App\Services\WalletService;
+use Exception;
 use Illuminate\Database\Eloquent\MassAssignmentException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 trait UseWebhookRedis
 {
@@ -29,7 +29,7 @@ trait UseWebhookRedis
     {
         // Cache event in Redis
         $ttl = 600; // Time-to-live (in seconds)
-        Redis::setex('event:' . $request->getMessageID(), $ttl, json_encode($request->all()));
+        Redis::setex('event:'.$request->getMessageID(), $ttl, json_encode($request->all()));
 
         // Store event in the database
         return SeamlessEvent::create([
@@ -44,8 +44,9 @@ trait UseWebhookRedis
     /**
      * Create wager transactions from request transactions.
      *
-     * @param array<int, RequestTransaction> $requestTransactions
+     * @param  array<int, RequestTransaction>  $requestTransactions
      * @return array<int, SeamlessTransaction>
+     *
      * @throws MassAssignmentException
      */
     public function createWagerTransactions($requestTransactions, SeamlessEvent $event, bool $refund = false)
@@ -64,7 +65,7 @@ trait UseWebhookRedis
 
                 if ($refund) {
                     $wager->update(['status' => WagerStatus::Refund]);
-                } elseif (!$wager->wasRecentlyCreated) {
+                } elseif (! $wager->wasRecentlyCreated) {
                     $wager->update([
                         'status' => $requestTransaction->TransactionAmount > 0 ? WagerStatus::Win : WagerStatus::Lose,
                     ]);
@@ -76,8 +77,8 @@ trait UseWebhookRedis
                     ->where('product_id', $product->id)
                     ->first();
 
-                if (!$game_type_product) {
-                    throw new Exception("Game type product combination not found");
+                if (! $game_type_product) {
+                    throw new Exception('Game type product combination not found');
                 }
 
                 $rate = $game_type_product->rate;

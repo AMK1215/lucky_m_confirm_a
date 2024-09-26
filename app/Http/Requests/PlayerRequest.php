@@ -29,7 +29,7 @@ class PlayerRequest extends FormRequest
             'amount' => 'nullable|numeric',
             'payment_type_id' => 'required|numeric|exists:payment_types,id',
             'account_name' => 'required|min:3|string',
-            'account_number' =>  ['required', 'regex:/^[0-9]+$/'],
+            'account_number' => ['required', 'regex:/^[0-9]+$/'],
         ];
     }
 }

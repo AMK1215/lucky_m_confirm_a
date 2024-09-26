@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Models\User;
 use App\Enums\UserType;
-use Illuminate\Http\Request;
-use App\Models\Admin\UserLog;
-use App\Traits\HttpResponses;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserResource;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Http\Resources\PlayerResource;
-use App\Http\Resources\AgentResource;
+use App\Http\Requests\Api\ChangePasswordRequest;
 use App\Http\Requests\Api\LoginRequest;
-use App\Http\Resources\RegisterResource;
 use App\Http\Requests\Api\ProfileRequest;
 use App\Http\Requests\Api\RegisterRequest;
-use App\Http\Requests\Api\ChangePasswordRequest;
+use App\Http\Resources\AgentResource;
+use App\Http\Resources\PlayerResource;
+use App\Http\Resources\RegisterResource;
+use App\Http\Resources\UserResource;
+use App\Models\Admin\UserLog;
+use App\Models\User;
+use App\Traits\HttpResponses;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -29,13 +29,12 @@ class AuthController extends Controller
     {
         $credentials = $request->only('phone', 'password');
 
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             return $this->error('', 'Credentials do not match!', 401);
         }
         $user = Auth::user();
 
-        if($user->status == 0)
-        {
+        if ($user->status == 0) {
             return $this->error('', 'Your account is not activated!', 401);
         }
 
@@ -56,7 +55,7 @@ class AuthController extends Controller
     {
         $agent = User::where('referral_code', $request->referral_code)->first();
 
-        if (!$agent) {
+        if (! $agent) {
             return $this->error('', 'Not Found Agent', 401);
         }
 
@@ -100,7 +99,7 @@ class AuthController extends Controller
     {
         $player = Auth::user();
 
-        if (!Hash::check($request->current_password, $player->password)) {
+        if (! Hash::check($request->current_password, $player->password)) {
             return $this->error('', 'Old Password is incorrect', 401);
         }
 
@@ -144,7 +143,7 @@ class AuthController extends Controller
         return $this->success(new PlayerResource($player), 'Update profile');
     }
 
-    public  function getAgent()
+    public function getAgent()
     {
         $player = Auth::user();
 

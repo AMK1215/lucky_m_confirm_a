@@ -130,21 +130,21 @@ class HomeController extends Controller
     private function getTodayWithdraw()
     {
         $withdraws = Auth::user()->transactions()->with('targetUser')
-        ->whereIn('transactions.type', ['deposit','withdraw'])
-        ->where('transactions.name','debit_transfer')
-        ->whereDate('created_at', now()->toDateString())
-        ->sum('amount');
-            
+            ->whereIn('transactions.type', ['deposit', 'withdraw'])
+            ->where('transactions.name', 'debit_transfer')
+            ->whereDate('created_at', now()->toDateString())
+            ->sum('amount');
+
         return $withdraws;
     }
 
     private function getTodayDeposit()
     {
         $deposits = Auth::user()->transactions()->with('targetUser')
-        ->whereIn('transactions.type', ['deposit','withdraw'])
-        ->where('transactions.name','credit_transfer')
-        ->whereDate('created_at', now()->toDateString())
-        ->sum('amount');
+            ->whereIn('transactions.type', ['deposit', 'withdraw'])
+            ->where('transactions.name', 'credit_transfer')
+            ->whereDate('created_at', now()->toDateString())
+            ->sum('amount');
 
         return $deposits;
     }
@@ -152,9 +152,9 @@ class HomeController extends Controller
     private function getTotalWithdraw()
     {
         $withdraws = Auth::user()->transactions()->with('targetUser')
-        ->whereIn('transactions.type', ['deposit','withdraw'])
-        ->where('transactions.name','debit_transfer')
-        ->sum('amount');
+            ->whereIn('transactions.type', ['deposit', 'withdraw'])
+            ->where('transactions.name', 'debit_transfer')
+            ->sum('amount');
 
         return $withdraws;
     }
@@ -162,13 +162,12 @@ class HomeController extends Controller
     private function getTotalDeposit()
     {
         $deposits = Auth::user()->transactions()->with('targetUser')
-            ->whereIn('transactions.type', ['deposit','withdraw'])
-            ->where('transactions.name','credit_transfer')
+            ->whereIn('transactions.type', ['deposit', 'withdraw'])
+            ->where('transactions.name', 'credit_transfer')
             ->sum('amount');
-        
+
         return $deposits;
     }
-
 
     private function getUserCounts($isAdmin, $user)
     {

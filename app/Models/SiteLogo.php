@@ -19,8 +19,8 @@ class SiteLogo extends Model
         return asset('assets/img/sitelogo/'.$this->image);
     }
 
-    public  function agent(): BelongsTo
+    public function agent(): BelongsTo
     {
-        return  $this->belongsTo(User::class,'agent_id');
+        return $this->belongsTo(User::class, 'agent_id');
     }
 }

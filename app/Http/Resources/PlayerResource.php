@@ -25,7 +25,7 @@ class PlayerResource extends JsonResource
             'status' => $this->status,
             'paymentType' => $this->paymentType->name,
             'account_number' => $this->account_number,
-            'account_name' => $this->account_name
+            'account_name' => $this->account_name,
         ];
     }
 }

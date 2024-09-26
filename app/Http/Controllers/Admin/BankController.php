@@ -41,7 +41,7 @@ class BankController extends Controller
             'agent_id' => Auth::id(),
             'account_number' => $request->account_number,
             'account_name' => $request->account_name,
-            'payment_type_id' => $request->payment_type_id
+            'payment_type_id' => $request->payment_type_id,
         ]);
 
         return redirect()->route('admin.bank.index')->with('success', 'Bank created successfully');
@@ -81,6 +81,7 @@ class BankController extends Controller
     public function destroy(Bank $bank)
     {
         $bank->delete();
+
         return redirect()->route('admin.bank.index')->with('success', 'Bank deleted successfully');
 
     }

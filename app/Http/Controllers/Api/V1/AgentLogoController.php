@@ -11,15 +11,15 @@ class AgentLogoController extends Controller
 {
     use HttpResponses;
 
-    public  function index()
+    public function index()
     {
         $player = Auth::user();
 
         $siteLogo = SiteLogo::where('agent_id', $player->agent_id)->first();
-        if($siteLogo){
-            return $this->success($siteLogo,'Agent Logo Successfully');
-        }else{
-            return $this->error(null,'Agent Logo Not Found', '400');
+        if ($siteLogo) {
+            return $this->success($siteLogo, 'Agent Logo Successfully');
+        } else {
+            return $this->error(null, 'Agent Logo Not Found', '400');
         }
     }
 }

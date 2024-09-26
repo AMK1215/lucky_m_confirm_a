@@ -30,9 +30,9 @@ return new class extends Migration
             $table->datetime('settlement_date');
             $table->datetime('modified_on');
             //$table->unsignedBigInteger("seamless_transaction_id")->nullable();
-             $table->unsignedBigInteger('agent_id')->nullable();
-           // $table->integer('agent_commission')->nullable();
-             $table->decimal('agent_commission', 15, 2)->default(0.00)->comment('The commission amount earned by the agent');
+            $table->unsignedBigInteger('agent_id')->nullable();
+            // $table->integer('agent_commission')->nullable();
+            $table->decimal('agent_commission', 15, 2)->default(0.00)->comment('The commission amount earned by the agent');
             $table->timestamps();
             $table->foreign('agent_id')->references('id')->on('users')->onDelete('cascade');
         });

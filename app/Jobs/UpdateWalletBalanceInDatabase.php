@@ -8,21 +8,19 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 
 class UpdateWalletBalanceInDatabase implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $userId;
+
     protected $amount;
 
     /**
      * Create a new job instance.
-     *
-     * @param int $userId
-     * @param float $amount
      */
     public function __construct(int $userId, float $amount)
     {
@@ -55,12 +53,13 @@ class UpdateWalletBalanceInDatabase implements ShouldQueue
                     Redis::setex($walletKey, 600, $currentBalance);
                 } else {
                     Log::error("Wallet not found for user ID {$this->userId}.");
+
                     return; // Exit if wallet not found
                 }
             }
 
             // Update the database with the new balance
-            $newBalance = (float)$currentBalance + (float)$this->amount;
+            $newBalance = (float) $currentBalance + (float) $this->amount;
 
             // Update the balance in the database
             DB::table('wallets')->where('holder_id', $this->userId)->update(['balance' => $newBalance]);

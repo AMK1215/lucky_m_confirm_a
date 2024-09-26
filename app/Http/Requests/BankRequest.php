@@ -24,7 +24,7 @@ class BankRequest extends FormRequest
         return [
             'payment_type_id' => 'required|exists:payment_types,id',
             'account_name' => 'required|string',
-            'account_number' => ['required', 'regex:/^[0-9]+$/']
+            'account_number' => ['required', 'regex:/^[0-9]+$/'],
         ];
     }
 }

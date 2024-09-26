@@ -33,7 +33,7 @@ class AgentRequest extends FormRequest
             'account_name' => 'required|string',
             'account_number' => ['required', 'regex:/^[0-9]+$/'],
             'line_id' => 'nullable',
-            'commission' => 'sometimes','integer',
+            'commission' => 'sometimes', 'integer',
         ];
     }
 }

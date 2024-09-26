@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1\Webhook;
 
-use Illuminate\Support\Facades\Redis;
 use App\Enums\SlotWebhookResponseCode;
 use App\Enums\TransactionName;
+use App\Http\Controllers\Api\V1\Webhook\Traits\RedisUseWebhook;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Slot\SlotWebhookRequest;
+use App\Jobs\UpdateWalletBalanceInDatabase;
+use App\Models\User;
 use App\Services\Slot\SlotWebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Api\V1\Webhook\Traits\RedisUseWebhook;
-use App\Models\User;
-use App\Jobs\UpdateWalletBalanceInDatabase;
+use Illuminate\Support\Facades\Redis;
 
 class RedisPlaceBetController extends Controller
 {
@@ -32,13 +32,13 @@ class RedisPlaceBetController extends Controller
 
             // Cache event in Redis before processing
             $ttl = 600; // Time-to-live for Redis cache (in seconds)
-            Redis::setex('event:' . $request->getMessageID(), $ttl, json_encode($request->all()));
+            Redis::setex('event:'.$request->getMessageID(), $ttl, json_encode($request->all()));
 
             // Log the event being cached
             // Log::info('Event cached in Redis', ['key' => 'event:' . $request->getMessageID(), 'value' => json_encode($request->all())]);
 
             // Retrieve cached data from Redis
-            $cachedData = Redis::get('event:' . $request->getMessageID());
+            $cachedData = Redis::get('event:'.$request->getMessageID());
             //Log::info('Redis get event', ['cachedData' => $cachedData]);
 
             // Convert cached data back to array
@@ -88,36 +88,34 @@ class RedisPlaceBetController extends Controller
         }
     }
 
+    public function getWalletBalance($userId)
+    {
+        $walletKey = "wallet_balance_user_{$userId}";
 
-function getWalletBalance($userId)
-{
-    $walletKey = "wallet_balance_user_{$userId}";
+        // Try to get the balance from Redis
+        $balance = Redis::get($walletKey);
 
-    // Try to get the balance from Redis
-    $balance = Redis::get($walletKey);
-
-    if ($balance === null) {
-        // Fallback to MySQL if Redis doesn't have the balance
-        $wallet = DB::table('wallets')->where('user_id', $userId)->first();
-        if ($wallet) {
-            $balance = $wallet->balance;
-            // Store balance in Redis with a TTL of 10 minutes
-            Redis::setex($walletKey, 600, $balance);
+        if ($balance === null) {
+            // Fallback to MySQL if Redis doesn't have the balance
+            $wallet = DB::table('wallets')->where('user_id', $userId)->first();
+            if ($wallet) {
+                $balance = $wallet->balance;
+                // Store balance in Redis with a TTL of 10 minutes
+                Redis::setex($walletKey, 600, $balance);
+            }
         }
+
+        return $balance;
     }
 
-    return $balance;
-}
+    public function updateWalletBalance($userId, $amount)
+    {
+        $walletKey = "wallet_balance_user_{$userId}";
 
-function updateWalletBalance($userId, $amount)
-{
-    $walletKey = "wallet_balance_user_{$userId}";
+        // Update the balance in Redis
+        Redis::incrbyfloat($walletKey, $amount);
 
-    // Update the balance in Redis
-    Redis::incrbyfloat($walletKey, $amount);
-
-    // Optionally: dispatch a job to update the balance in MySQL asynchronously
-    dispatch(new UpdateWalletBalanceInDatabase($userId, $amount));
-}
-
+        // Optionally: dispatch a job to update the balance in MySQL asynchronously
+        dispatch(new UpdateWalletBalanceInDatabase($userId, $amount));
+    }
 }

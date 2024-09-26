@@ -16,16 +16,17 @@ class Transaction extends ModelsTransaction
      * @var array<string, string>
      */
     //protected $fillable = ['agent_id'];
-     protected $fillable = [
-        'payable_type', 
-        'payable_id', 
-        'wallet_id', 
-        'type', 
-        'amount', 
-        'confirmed', 
-        'meta', 
-        'uuid'
+    protected $fillable = [
+        'payable_type',
+        'payable_id',
+        'wallet_id',
+        'type',
+        'amount',
+        'confirmed',
+        'meta',
+        'uuid',
     ];
+
     protected $casts = [
         'wallet_id' => 'int',
         'confirmed' => 'bool',

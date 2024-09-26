@@ -8,7 +8,6 @@ use App\Models\User;
 use Bavix\Wallet\External\Dto\Extra;
 use Bavix\Wallet\External\Dto\Option;
 
-
 class WalletService
 {
     public function forceTransfer(User $from, User $to, float $amount, TransactionName $transaction_name, array $meta = [])

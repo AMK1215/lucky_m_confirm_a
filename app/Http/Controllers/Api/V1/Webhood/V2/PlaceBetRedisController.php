@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1\Webhood\V2;
 
-use Illuminate\Support\Facades\Redis;
 use App\Enums\SlotWebhookResponseCode;
 use App\Enums\TransactionName;
+use App\Http\Controllers\Api\V1\Webhood\V2\Traits\UseWebhookRedis;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Slot\SlotWebhookRequest;
+use App\Jobs\UpdateWalletBalanceInDatabase;
+use App\Models\User;
 use App\Services\Slot\SlotWebhookService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Api\V1\Webhood\V2\Traits\UseWebhookRedis;
-use App\Models\User;
-use App\Jobs\UpdateWalletBalanceInDatabase;
+use Illuminate\Support\Facades\Redis;
 
 class PlaceBetRedisController extends Controller
 {
@@ -81,68 +81,67 @@ class PlaceBetRedisController extends Controller
     // }
 
     public function placeBet(SlotWebhookRequest $request)
-{
-    DB::beginTransaction();
-    try {
-        // Validate the request
-        $validator = $request->check();
-        if ($validator->fails()) {
-            return $validator->getResponse();
-        }
+    {
+        DB::beginTransaction();
+        try {
+            // Validate the request
+            $validator = $request->check();
+            if ($validator->fails()) {
+                return $validator->getResponse();
+            }
 
-        $userId = $request->getMember()->id;
-        $before_balance = $this->getWalletBalance($userId); // Get balance from Redis or database
+            $userId = $request->getMember()->id;
+            $before_balance = $this->getWalletBalance($userId); // Get balance from Redis or database
 
-        // Cache event in Redis
-        $ttl = 600; // Time-to-live in seconds
-        Redis::setex('event:' . $request->getMessageID(), $ttl, json_encode($request->all()));
+            // Cache event in Redis
+            $ttl = 600; // Time-to-live in seconds
+            Redis::setex('event:'.$request->getMessageID(), $ttl, json_encode($request->all()));
 
-        // Create and store the event in the database
-        $event = $this->createEvent($request);
+            // Create and store the event in the database
+            $event = $this->createEvent($request);
 
-        // Create wager transactions related to the event
-        $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event);
+            // Create wager transactions related to the event
+            $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event);
 
-        // Process each seamless transaction
-        foreach ($seamless_transactions as $seamless_transaction) {
-            $this->processTransfer(
-                $request->getMember(),
-                User::adminUser(),
-                TransactionName::Stake,
-                $seamless_transaction->transaction_amount,
-                $seamless_transaction->rate,
-                [
-                    'wager_id' => $seamless_transaction->wager_id,
-                    'event_id' => $request->getMessageID(),
-                    'seamless_transaction_id' => $seamless_transaction->id,
-                ]
+            // Process each seamless transaction
+            foreach ($seamless_transactions as $seamless_transaction) {
+                $this->processTransfer(
+                    $request->getMember(),
+                    User::adminUser(),
+                    TransactionName::Stake,
+                    $seamless_transaction->transaction_amount,
+                    $seamless_transaction->rate,
+                    [
+                        'wager_id' => $seamless_transaction->wager_id,
+                        'event_id' => $request->getMessageID(),
+                        'seamless_transaction_id' => $seamless_transaction->id,
+                    ]
+                );
+
+                // Update the wallet balance after each transaction
+                $this->updateWalletBalance($userId, -$seamless_transaction->transaction_amount); // Deduct amount
+            }
+
+            // Refresh balance after transactions
+            $after_balance = $this->getWalletBalance($userId); // Get updated balance
+
+            DB::commit();
+
+            // Return success response
+            return SlotWebhookService::buildResponse(
+                SlotWebhookResponseCode::Success,
+                //$after_balance,
+                //$before_balance
+                number_format($after_balance, 2, '.', ''), // Ensure two decimal places
+                number_format($before_balance, 2, '.', '')  // Ensure two decimal places
             );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error during placeBet', ['error' => $e->getMessage()]);
 
-            // Update the wallet balance after each transaction
-            $this->updateWalletBalance($userId, -$seamless_transaction->transaction_amount); // Deduct amount
+            return response()->json(['message' => $e->getMessage()], 500);
         }
-
-        // Refresh balance after transactions
-        $after_balance = $this->getWalletBalance($userId); // Get updated balance
-
-        DB::commit();
-
-        // Return success response
-        return SlotWebhookService::buildResponse(
-            SlotWebhookResponseCode::Success,
-            //$after_balance,
-            //$before_balance
-            number_format($after_balance, 2, '.', ''), // Ensure two decimal places
-            number_format($before_balance, 2, '.', '')  // Ensure two decimal places
-        );
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Error during placeBet', ['error' => $e->getMessage()]);
-
-        return response()->json(['message' => $e->getMessage()], 500);
     }
-}
-
 
     /**
      * Get wallet balance, either from Redis or database.
@@ -168,24 +167,24 @@ class PlaceBetRedisController extends Controller
     // }
 
     public function getWalletBalance($userId)
-{
-    $walletKey = "wallet_balance_user_{$userId}";
+    {
+        $walletKey = "wallet_balance_user_{$userId}";
 
-    // Try to get the balance from Redis
-    $balance = Redis::get($walletKey);
+        // Try to get the balance from Redis
+        $balance = Redis::get($walletKey);
 
-    if ($balance === null) {
-        // Fallback to MySQL if Redis doesn't have the balance
-        $wallet = DB::table('wallets')->where('holder_id', $userId)->first();
-        if ($wallet) {
-            $balance = $wallet->balance;
-            // Store balance in Redis with a TTL of 10 minutes
-            Redis::setex($walletKey, 600, number_format($balance, 2, '.', '')); // Format for consistency
+        if ($balance === null) {
+            // Fallback to MySQL if Redis doesn't have the balance
+            $wallet = DB::table('wallets')->where('holder_id', $userId)->first();
+            if ($wallet) {
+                $balance = $wallet->balance;
+                // Store balance in Redis with a TTL of 10 minutes
+                Redis::setex($walletKey, 600, number_format($balance, 2, '.', '')); // Format for consistency
+            }
         }
-    }
 
-    return (float)number_format($balance, 2, '.', ''); // Return as float
-}
+        return (float) number_format($balance, 2, '.', ''); // Return as float
+    }
 
     /**
      * Update wallet balance in Redis and queue a job to update in MySQL.

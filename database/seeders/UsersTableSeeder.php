@@ -38,7 +38,7 @@ class UsersTableSeeder extends Seeder
             'type' => $type->value,
             'payment_type_id' => 1,
             'account_name' => 'Test',
-            'account_number' => '3498787787'
+            'account_number' => '3498787787',
         ]);
     }
 }
