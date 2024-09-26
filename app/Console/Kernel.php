@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('make:pull-report')->everyFiveSeconds();
-        $schedule->job(new SyncWalletBalanceToDatabase())->everyMinute();  // or adjust as needed
+        $schedule->job(new SyncWalletBalanceToDatabase())->everyFiveSeconds()->sendOutputTo(storage_path('logs/sync_wallet.log')); // Save output to custom log;  // or adjust as needed
     }
 
     /**
