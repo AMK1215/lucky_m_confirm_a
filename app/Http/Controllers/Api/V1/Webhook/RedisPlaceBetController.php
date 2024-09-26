@@ -97,7 +97,7 @@ class RedisPlaceBetController extends Controller
 
         if ($balance === null) {
             // Fallback to MySQL if Redis doesn't have the balance
-            $wallet = DB::table('wallets')->where('user_id', $userId)->first();
+            $wallet = DB::table('wallets')->where('holder_id', $userId)->first();
             if ($wallet) {
                 $balance = $wallet->balance;
                 // Store balance in Redis with a TTL of 10 minutes
