@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers\Api\V1\Webhook;
 
-use App\Enums\SlotWebhookResponseCode;
-use App\Enums\TransactionName;
-use App\Http\Controllers\Api\V1\Webhook\Traits\UseWebhook;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Slot\SlotWebhookRequest;
-use App\Models\SeamlessEvent;
-use App\Models\Transaction;
+use Log;
 use App\Models\User;
 use App\Models\Wager;
-use App\Services\Slot\SlotWebhookService;
-use App\Services\Slot\SlotWebhookValidator;
+use App\Models\Transaction;
+use App\Models\SeamlessEvent;
+use App\Enums\TransactionName;
 use App\Services\WalletService;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Enums\SlotWebhookResponseCode;
+use App\Services\Slot\SlotWebhookService;
+use App\Services\Slot\SlotWebhookValidator;
+use App\Http\Requests\Slot\SlotWebhookRequest;
+use App\Http\Controllers\Api\V1\Webhook\Traits\UseWebhook;
+use Illuminate\Support\Facades\Log as FacadesLog;
 
 class PlaceBetController extends Controller
 {
@@ -78,7 +80,7 @@ class PlaceBetController extends Controller
             } catch (\Illuminate\Database\QueryException $e) {
                 if ($e->getCode() === '40001') { // 40001 indicates a deadlock
                     // Log the deadlock error
-                    \Log::warning('Deadlock encountered during placeBet: Retrying...');
+                    FacadesLog::warning('Deadlock encountered during placeBet: Retrying...');
 
                     // Retry if deadlock occurs
                     continue;
