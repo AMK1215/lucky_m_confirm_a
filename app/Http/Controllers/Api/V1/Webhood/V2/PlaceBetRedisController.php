@@ -146,26 +146,26 @@ class PlaceBetRedisController extends Controller
     /**
      * Get wallet balance, either from Redis or database.
      */
-    public function getWalletBalance($userId)
-    {
-        $walletKey = "wallet_balance_user_{$userId}";
+    // public function getWalletBalance($userId)
+    // {
+    //     $walletKey = "wallet_balance_user_{$userId}";
 
-        // Try to get the balance from Redis
-        $balance = Redis::get($walletKey);
+    //     // Try to get the balance from Redis
+    //     $balance = Redis::get($walletKey);
 
-        if ($balance === null) {
-            // Fallback to MySQL if Redis doesn't have the balance
-            $wallet = DB::table('wallets')->where('holder_id', $userId)->first();
-            if ($wallet) {
-                $balance = $wallet->balance;
-                $new_balance = $balance->balanceFloat;
-                // Store balance in Redis with a TTL of 10 minutes
-                Redis::setex($walletKey, 600, $new_balance);
-            }
-        }
+    //     if ($balance === null) {
+    //         // Fallback to MySQL if Redis doesn't have the balance
+    //         $wallet = DB::table('wallets')->where('holder_id', $userId)->first();
+    //         if ($wallet) {
+    //             $balance = $wallet->balance;
+    //             $new_balance = $balance->balanceFloat;
+    //             // Store balance in Redis with a TTL of 10 minutes
+    //             Redis::setex($walletKey, 600, $new_balance);
+    //         }
+    //     }
 
-        return $balance;
-    }
+    //     return $balance;
+    // }
 
     // public function getWalletBalance($userId)
     // {
@@ -190,14 +190,14 @@ class PlaceBetRedisController extends Controller
     /**
      * Update wallet balance in Redis and queue a job to update in MySQL.
      */
-    public function updateWalletBalance($userId, $amount)
-    {
-        $walletKey = "wallet_balance_user_{$userId}";
+    // public function updateWalletBalance($userId, $amount)
+    // {
+    //     $walletKey = "wallet_balance_user_{$userId}";
 
-        // Update the balance in Redis
-        Redis::incrbyfloat($walletKey, $amount);
+    //     // Update the balance in Redis
+    //     Redis::incrbyfloat($walletKey, $amount);
 
-        // Dispatch a job to update the balance in MySQL asynchronously
-        dispatch(new UpdateWalletBalanceInDatabase($userId, $amount));
-    }
+    //     // Dispatch a job to update the balance in MySQL asynchronously
+    //     dispatch(new UpdateWalletBalanceInDatabase($userId, $amount));
+    // }
 }
