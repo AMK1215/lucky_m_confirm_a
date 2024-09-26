@@ -55,6 +55,7 @@ trait RedisUseWebhook
         $seamless_transactions = [];
 
         foreach ($requestTransactions as $requestTransaction) {
+            DB::transaction(function () use (&$seamless_transactions, $event, $requestTransaction, $refund) {
             $wager = Wager::firstOrCreate(
                 ['seamless_wager_id' => $requestTransaction->WagerID],
                 [
@@ -105,6 +106,7 @@ trait RedisUseWebhook
                 'valid_amount' => $requestTransaction->ValidBetAmount,
                 'status' => $requestTransaction->Status,
             ]);
+         }, 3); // Retry 3 times if deadlock occurs
         }
 
         return $seamless_transactions;
