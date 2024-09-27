@@ -49,3 +49,17 @@ sudo chmod -R 775 /var/www/html/bossi_a/storage
 sudo chmod -R 775 /var/www/html/bossi_a/bootstrap/cache
 ls -al /var/www/html/bossi_a
 sudo systemctl restart nginx
+---------
+Redis install
+sudo apt update
+sudo apt upgrade
+sudo apt install redis-server
+sudo nano /etc/redis/redis.conf
+supervised systemd // change no to systemd
+sudo systemctl restart redis.service
+redis-cli ping
+PONG // out
+sudo systemctl enable redis-server
+sudo systemctl restart redis-server
+sudo systemctl status redis-server
+
