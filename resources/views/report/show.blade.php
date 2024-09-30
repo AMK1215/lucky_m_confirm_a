@@ -3,14 +3,14 @@
 <head>
     <title>Agent Monthly Report</title>
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
-    <script src="//code.jquery.com/jquery-1.12.3.js"></script>
-<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+    <script src="{{asset('admin_app/assets/js/jquery.min.js')}}"></script>
+<script src="{{asset('admin_app/assets/js/jquery.dataTables.min.js)}}"></script>
 <script
-    src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
+    src="{{asset('admin_app/assets/js/dataTables.bootstrap.min.js')}}/"></script>
 <link rel="stylesheet"
-    href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    href="{{asset('admin_app/assets/css/bootstrap.min.css')}}">
 <link rel="stylesheet"
-    href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css">
+    href="{{asset('admin_app/assets/css/dataTables.bootstrap.min.css')}}">
     <style>
         table {
             width: 100%;
