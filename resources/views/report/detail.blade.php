@@ -6,7 +6,7 @@
  <meta http-equiv="X-UA-Compatible" content="ie=edge">
  <title>Lucky M</title>
  <script src="{{asset('admin_app/assets/js/jquery.min.js')}}"></script>
-<script src="{{asset('admin_app/assets/js/jquery.dataTables.min.js')}}"></script>
+<script src="{{asset('admin_app/assets/js/jquery.datatable.min.js')}}"></script>
 <script
     src="{{asset('admin_app/assets/js/dataTables.bootstrap.min.js')}}/"></script>
 <link rel="stylesheet"
