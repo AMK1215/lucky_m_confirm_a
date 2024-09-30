@@ -4,7 +4,7 @@
     <title>Agent Monthly Report</title>
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
     <script src="{{asset('admin_app/assets/js/jquery.min.js')}}"></script>
-<script src="{{asset('admin_app/assets/js/jquery.dataTables.min.js)}}"></script>
+<script src="{{asset('admin_app/assets/js/jquery.dataTables.min.js')}}"></script>
 <script
     src="{{asset('admin_app/assets/js/dataTables.bootstrap.min.js')}}/"></script>
 <link rel="stylesheet"
