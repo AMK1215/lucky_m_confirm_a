@@ -57,9 +57,6 @@ class ReportController extends Controller
                     'products.name as product_name',
                     DB::raw('(reports.payout_amount - reports.valid_bet_amount) as win_or_lose')
                 );
-            if (! Auth::user()->hasRole('Admin')) {
-                return $query->where('reports.agent_id', Auth::id());
-            }
             $report = $query->get();
 
             return DataTables::of($report)
