@@ -12,7 +12,7 @@ class GameList extends Model
     use HasFactory;
 
     protected $fillable = ['code', 'name', 'click_count', 'game_type_id', 'product_id', 'image_url', 'status', 'hot_status'];
-    protected $appends = ['imageUrl']; // Changed from 'image' to 'imgUrl'
+    //protected $appends = ['imageUrl']; // Changed from 'image' to 'imgUrl'
 
     public function product()
     {
@@ -23,9 +23,13 @@ class GameList extends Model
     {
         return $this->belongsTo(GameType::class);
     }
-
-    public function getImageUrlAttribute()
+     public function getImageUrlAttribute($value)
     {
-        return asset('/assets/slot_app/images/pg_soft/'.$this->image_url);
+        return asset('/assets/slot_app/images/pg_soft/' . $value);
     }
+
+    // public function getImageUrlAttribute()
+    // {
+    //     return asset('/assets/slot_app/images/pg_soft/'.$this->image_url);
+    // }
 }
