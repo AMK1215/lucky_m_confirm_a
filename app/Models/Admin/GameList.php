@@ -28,8 +28,8 @@ class GameList extends Model
         return asset('/game_logo/'.$this->image);
     }
 
-    // public function getImageUrlAttribute($value)
-    // {
-    //     return asset('/assets/slot_app/images/pg_soft/' . $value);
-    // }
+    public function getImageUrlAttribute($value)
+    {
+        return asset('/assets/slot_app/images/pg_soft/' . $value);
+    }
 }
