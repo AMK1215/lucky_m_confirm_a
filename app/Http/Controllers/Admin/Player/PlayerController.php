@@ -91,7 +91,7 @@ class PlayerController extends Controller
         $agent = Auth::user();
         $inputs = $request->validated();
 
-        if ($this->isExistingUserForAgent($request->phone, $agent->id)) {
+        if ($this->isExistingUserForAgent($request->phone)) {
             return redirect()->back()->with('error', 'This phone number already exists');
         }
 
@@ -336,9 +336,9 @@ class PlayerController extends Controller
         return view('players.index', compact('players'));
     }
 
-    private function isExistingUserForAgent($phone, $agent_id): bool
+    private function isExistingUserForAgent($phone): bool
     {
         //return User::where('phone', $phone)->where('agent_id', $agent_id)->first();
-        return User::where('phone', $phone)->where('agent_id', $agent_id)->exists();
+        return User::where('phone', $phone)->exists();
     }
 }

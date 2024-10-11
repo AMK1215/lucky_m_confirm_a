@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
-class DownloadGameImages extends Command
+class DownloadedImageUpdateToDB extends Command
 {
     /**
      * The name and signature of the console command.
