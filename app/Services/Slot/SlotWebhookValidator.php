@@ -170,9 +170,9 @@ class SlotWebhookValidator
             $game_type_product = GameTypeProduct::where('game_type_id', $game_type_ids_array[$key])
                 ->where('product_id', $product_id_array[$key])
                 ->first();
-            if (!$game_type_product) {
-                throw new Exception("Product or GameType not found for {" . $transaction['ProductID'] . " " . $transaction['GameType'] . "}");
-            }
+            // if (!$game_type_product) {
+            //     throw new Exception("Product or GameType not found for {" . $transaction['ProductID'] . " " . $transaction['GameType'] . "}");
+            // }
             $transaction['Rate'] = $game_type_product->rate;
             $transaction['ActualGameTypeID'] = $game_type_ids_array[$key];
             $transaction['ActualProductID'] = $product_id_array[$key];
