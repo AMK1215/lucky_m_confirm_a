@@ -154,46 +154,103 @@ class SlotWebhookValidator
     }
 
     protected function getFullTransactions()
-    {
-        $transactions = $this->request->getTransactions();
-        $game_type_codes_array = array_column($transactions, 'GameType');
-        $game_type_ids_array = GameType::whereIn('code', $game_type_codes_array)->pluck('id')->toArray();
+{
+    $transactions = $this->request->getTransactions();
 
-        $product_codes_array = array_column($transactions, 'ProductID');
-        $product_id_array = Product::whereIn('code', $product_codes_array)->pluck('id')->toArray();
-        // if id arrays length are not equal to transactions length, then throw exception
-        // if (count($game_type_ids_array) != count($transactions) || count($product_id_array) != count($transactions)) {
-        //     throw new Exception("Product or GameType not found.");
-        // }
-
-        foreach ($transactions as $key => $transaction) {
-            $game_type_product = GameTypeProduct::where('game_type_id', $game_type_ids_array[$key])
-                ->where('product_id', $product_id_array[$key])
-                ->first();
-            // if (!$game_type_product) {
-            //     throw new Exception("Product or GameType not found for {" . $transaction['ProductID'] . " " . $transaction['GameType'] . "}");
-            // }
-            //$transaction['Rate'] = $game_type_product->rate;
-            $transaction['Rate'] = 1.0000;
-
-            $transaction['ActualGameTypeID'] = $game_type_ids_array[$key];
-            $transaction['ActualProductID'] = $product_id_array[$key];
-
-            $requestTransaction = RequestTransaction::from($transaction);
-
-            $this->requestTransactions[] = $requestTransaction;
-
-            if ($requestTransaction->TransactionID && ! $this->isNewTransaction($requestTransaction)) {
-                return $this->response(SlotWebhookResponseCode::DuplicateTransaction);
-            }
-
-            if (! in_array($this->request->getMethodName(), ['placebet', 'bonus', 'jackpot', 'buyin', 'buyout', 'pushbet']) && $this->isNewWager($requestTransaction)) {
-                return $this->response(SlotWebhookResponseCode::BetNotExist);
-            }
-
-            $this->totalTransactionAmount += $requestTransaction->TransactionAmount;
-        }
+    // Validate that we're working with multiple transactions
+    if (!is_array($transactions)) {
+        throw new Exception("Transactions must be an array.");
     }
+
+    foreach ($transactions as $transaction) {
+        // Find game type and product based on the transaction details
+        $game_type = GameType::where('code', $transaction['GameType'])->first();
+        $product = Product::where('code', $transaction['ProductID'])->first();
+
+        // Check if both the game type and product were found
+        if (!$game_type || !$product) {
+            throw new Exception("Product or GameType not found for ProductID: " . $transaction['ProductID'] . " and GameType: " . $transaction['GameType']);
+        }
+
+        // Check if the GameType-Product relationship exists
+        $game_type_product = GameTypeProduct::where('game_type_id', $game_type->id)
+            ->where('product_id', $product->id)
+            ->first();
+
+        if (!$game_type_product) {
+            throw new Exception("No matching GameTypeProduct found for ProductID: " . $transaction['ProductID'] . " and GameType: " . $transaction['GameType']);
+        }
+
+        // Assign values to the transaction
+        $transaction['Rate'] = $game_type_product->rate; // or 1.0000 if you prefer a fixed rate
+        $transaction['ActualGameTypeID'] = $game_type->id;
+        $transaction['ActualProductID'] = $product->id;
+
+        // Convert the transaction and add it to requestTransactions
+        $requestTransaction = RequestTransaction::from($transaction);
+        $this->requestTransactions[] = $requestTransaction;
+
+        // Check for duplicate transactions
+        if ($requestTransaction->TransactionID && !$this->isNewTransaction($requestTransaction)) {
+            return $this->response(SlotWebhookResponseCode::DuplicateTransaction);
+        }
+
+        // Check for wagers, if necessary
+        if (!in_array($this->request->getMethodName(), ['placebet', 'bonus', 'jackpot', 'buyin', 'buyout', 'pushbet']) && $this->isNewWager($requestTransaction)) {
+            return $this->response(SlotWebhookResponseCode::BetNotExist);
+        }
+
+        // Add to the total transaction amount
+        $this->totalTransactionAmount += $requestTransaction->TransactionAmount;
+    }
+}
+
+
+    // protected function getFullTransactions()
+    // {
+    //     $transactions = $this->request->getTransactions();
+    //     //$game_type_codes_array = array_column($transactions, 'GameType');
+    //     $game_type_ids_array = GameType::where('code', $transactions->GameType)->first();
+
+    //     //$game_type_ids_array = GameType::whereIn('code', $game_type_codes_array)->pluck('id')->toArray();
+
+    //    // $product_codes_array = array_column($transactions, 'ProductID');
+    //     $product_id_array = Product::where('code', $transactions->ProductID)->first();
+
+    //     //$product_id_array = Product::whereIn('code', $product_codes_array)->pluck('id')->toArray();
+    //     // if id arrays length are not equal to transactions length, then throw exception
+    //     if (count($game_type_ids_array) != count($transactions) || count($product_id_array) != count($transactions)) {
+    //         throw new Exception("Product or GameType not found.");
+    //     }
+
+    //     foreach ($transactions as $key => $transaction) {
+    //         $game_type_product = GameTypeProduct::where('game_type_id', $game_type_ids_array[$key])
+    //             ->where('product_id', $product_id_array[$key])
+    //             ->first();
+    //         if (!$game_type_product) {
+    //             throw new Exception("Product or GameType not found for {" . $transaction['ProductID'] . " " . $transaction['GameType'] . "}");
+    //         }
+    //         //$transaction['Rate'] = $game_type_product->rate;
+    //         $transaction['Rate'] = 1.0000;
+
+    //         $transaction['ActualGameTypeID'] = $game_type_ids_array[$key];
+    //         $transaction['ActualProductID'] = $product_id_array[$key];
+
+    //         $requestTransaction = RequestTransaction::from($transaction);
+
+    //         $this->requestTransactions[] = $requestTransaction;
+
+    //         if ($requestTransaction->TransactionID && ! $this->isNewTransaction($requestTransaction)) {
+    //             return $this->response(SlotWebhookResponseCode::DuplicateTransaction);
+    //         }
+
+    //         if (! in_array($this->request->getMethodName(), ['placebet', 'bonus', 'jackpot', 'buyin', 'buyout', 'pushbet']) && $this->isNewWager($requestTransaction)) {
+    //             return $this->response(SlotWebhookResponseCode::BetNotExist);
+    //         }
+
+    //         $this->totalTransactionAmount += $requestTransaction->TransactionAmount;
+    //     }
+    // }
 }
 // class SlotWebhookValidator
 // {
