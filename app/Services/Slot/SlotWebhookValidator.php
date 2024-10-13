@@ -44,7 +44,7 @@ class SlotWebhookValidator
             return $this->response(SlotWebhookResponseCode::MemberNotExists);
         }
 
-        //$this->getFullTransactions();
+        $this->getFullTransactions();
 
         if (! $this->hasEnoughBalance()) {
             return $this->response(SlotWebhookResponseCode::MemberInsufficientBalance);
