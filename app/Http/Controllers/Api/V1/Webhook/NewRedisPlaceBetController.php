@@ -100,7 +100,11 @@ class NewRedisPlaceBetController extends Controller
 
     public function placeBetNew(SlotWebhookRequest $request)
     {
-        $userId = $request->getMember()->id;
+        $member = $request->getMember();
+        $admin = User::adminUser();
+        $messageId = $request->getMessageID();
+
+        $userId = $member->id;
 
         // Try to acquire a Redis lock for the user's wallet
         $lock = Redis::set("wallet:lock:$userId", true, 'EX', 10, 'NX'); // 10 seconds lock
@@ -118,7 +122,7 @@ class NewRedisPlaceBetController extends Controller
             return $validator->getResponse();
         }
 
-        $before_balance = $request->getMember()->balanceFloat;
+        $before_balance = $member->balanceFloat;
 
         DB::beginTransaction();
         try {
@@ -131,14 +135,14 @@ class NewRedisPlaceBetController extends Controller
             // Process each seamless transaction
             foreach ($seamless_transactions as $seamless_transaction) {
                 $this->processTransfer(
-                    $request->getMember(),
-                    User::adminUser(),
+                    $member,
+                    $admin,
                     TransactionName::Stake,
                     $seamless_transaction->transaction_amount,
                     $seamless_transaction->rate,
                     [
                         'wager_id' => $seamless_transaction->wager_id,
-                        'event_id' => $request->getMessageID(),
+                        'event_id' => $messageId,
                         'seamless_transaction_id' => $seamless_transaction->id,
                     ]
                 );
