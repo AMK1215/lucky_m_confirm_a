@@ -85,7 +85,7 @@ trait OptimizedBettingProcess
     /**
      * Batch creation of wagers in a single insert to avoid deadlocks.
      */
-    public function createBatchWagerTransactions($requestTransactions, SeamlessEvent $event, bool $refund = false)
+    public function createWagerTransactions($requestTransactions, SeamlessEvent $event, bool $refund = false)
     {
         $wagerData = [];
         $seamless_transactions = [];
