@@ -166,69 +166,141 @@ trait OptimizedBettingProcess
      * Create seamless transactions and handle deadlock retries.
      */
     public function createWagerTransactions($requestTransactions, SeamlessEvent $event, bool $refund = false)
-    {
-        $seamless_transactions = [];
-        $retryCount = 0;
-        $maxRetries = 5;
+{
+    $seamless_transactions = [];
+    $retryCount = 0;
+    $maxRetries = 5;
 
-        foreach ($requestTransactions as $requestTransaction) {
-            do {
-                try {
-                    DB::transaction(function () use (&$seamless_transactions, $event, $requestTransaction, $refund) {
-                        // Fetch wager with lock
-                        $wager = Wager::where('seamless_wager_id', $requestTransaction->WagerID)
-                            ->lockForUpdate()
-                            ->firstOrCreate([
-                                'user_id' => $event->user_id,
-                                'seamless_wager_id' => $requestTransaction->WagerID,
-                            ]);
+    foreach ($requestTransactions as $requestTransaction) {
+        do {
+            try {
+                DB::transaction(function () use (&$seamless_transactions, $event, $requestTransaction, $refund) {
+                    // Explicitly lock the row if it exists
+                    $existingWager = Wager::where('seamless_wager_id', $requestTransaction->WagerID)
+                        ->lockForUpdate()
+                        ->first();
 
-                        // Update wager status
-                        if ($refund) {
-                            $wager->update(['status' => WagerStatus::Refund]);
-                        } elseif (!$wager->wasRecentlyCreated) {
-                            $wager->update(['status' => $requestTransaction->TransactionAmount > 0 ? WagerStatus::Win : WagerStatus::Lose]);
-                        }
-
-                        // Retrieve game type and product
-                        $game_type = GameType::where('code', $requestTransaction->GameType)->firstOrFail();
-                        $product = Product::where('code', $requestTransaction->ProductID)->firstOrFail();
-                        $rate = GameTypeProduct::where('game_type_id', $game_type->id)
-                            ->where('product_id', $product->id)
-                            ->firstOrFail()->rate;
-
-                        // Create seamless transaction
-                        $seamless_transactions[] = $event->transactions()->create([
+                    if (!$existingWager) {
+                        // Create a new wager if it does not exist
+                        $wager = Wager::create([
                             'user_id' => $event->user_id,
-                            'wager_id' => $wager->id,
-                            'game_type_id' => $game_type->id,
-                            'product_id' => $product->id,
-                            'seamless_transaction_id' => $requestTransaction->TransactionID,
-                            'rate' => $rate,
-                            'transaction_amount' => $requestTransaction->TransactionAmount,
-                            'bet_amount' => $requestTransaction->BetAmount,
-                            'valid_amount' => $requestTransaction->ValidBetAmount,
-                            'status' => $requestTransaction->Status,
+                            'seamless_wager_id' => $requestTransaction->WagerID,
                         ]);
-                    });
-
-                    break;  // Exit loop if successful
-                } catch (\Illuminate\Database\QueryException $e) {
-                    if ($e->getCode() === '40001') {  // Deadlock error code
-                        $retryCount++;
-                        if ($retryCount >= $maxRetries) {
-                            throw $e;  // Max retries reached, fail
-                        }
-                        sleep(1);  // Wait before retrying
                     } else {
-                        throw $e;  // Rethrow non-deadlock exceptions
+                        $wager = $existingWager;
                     }
-                }
-            } while ($retryCount < $maxRetries);
-        }
 
-        return $seamless_transactions;
+                    // Update wager status
+                    if ($refund) {
+                        $wager->update(['status' => WagerStatus::Refund]);
+                    } elseif (!$wager->wasRecentlyCreated) {
+                        $wager->update(['status' => $requestTransaction->TransactionAmount > 0 ? WagerStatus::Win : WagerStatus::Lose]);
+                    }
+
+                    // Retrieve game type and product
+                    $game_type = GameType::where('code', $requestTransaction->GameType)->firstOrFail();
+                    $product = Product::where('code', $requestTransaction->ProductID)->firstOrFail();
+                    $rate = GameTypeProduct::where('game_type_id', $game_type->id)
+                        ->where('product_id', $product->id)
+                        ->firstOrFail()->rate;
+
+                    // Create seamless transaction
+                    $seamless_transactions[] = $event->transactions()->create([
+                        'user_id' => $event->user_id,
+                        'wager_id' => $wager->id,
+                        'game_type_id' => $game_type->id,
+                        'product_id' => $product->id,
+                        'seamless_transaction_id' => $requestTransaction->TransactionID,
+                        'rate' => $rate,
+                        'transaction_amount' => $requestTransaction->TransactionAmount,
+                        'bet_amount' => $requestTransaction->BetAmount,
+                        'valid_amount' => $requestTransaction->ValidBetAmount,
+                        'status' => $requestTransaction->Status,
+                    ]);
+                });
+
+                break;  // Exit loop if successful
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($e->getCode() === '40001') {  // Deadlock error code
+                    $retryCount++;
+                    if ($retryCount >= $maxRetries) {
+                        throw $e;  // Max retries reached, fail
+                    }
+                    sleep(1);  // Wait before retrying
+                } else {
+                    throw $e;  // Rethrow non-deadlock exceptions
+                }
+            }
+        } while ($retryCount < $maxRetries);
     }
+
+    return $seamless_transactions;
+}
+
+    // public function createWagerTransactions($requestTransactions, SeamlessEvent $event, bool $refund = false)
+    // {
+    //     $seamless_transactions = [];
+    //     $retryCount = 0;
+    //     $maxRetries = 5;
+
+    //     foreach ($requestTransactions as $requestTransaction) {
+    //         do {
+    //             try {
+    //                 DB::transaction(function () use (&$seamless_transactions, $event, $requestTransaction, $refund) {
+    //                     // Fetch wager with lock
+    //                     $wager = Wager::where('seamless_wager_id', $requestTransaction->WagerID)
+    //                         ->lockForUpdate()
+    //                         ->firstOrCreate([
+    //                             'user_id' => $event->user_id,
+    //                             'seamless_wager_id' => $requestTransaction->WagerID,
+    //                         ]);
+
+    //                     // Update wager status
+    //                     if ($refund) {
+    //                         $wager->update(['status' => WagerStatus::Refund]);
+    //                     } elseif (!$wager->wasRecentlyCreated) {
+    //                         $wager->update(['status' => $requestTransaction->TransactionAmount > 0 ? WagerStatus::Win : WagerStatus::Lose]);
+    //                     }
+
+    //                     // Retrieve game type and product
+    //                     $game_type = GameType::where('code', $requestTransaction->GameType)->firstOrFail();
+    //                     $product = Product::where('code', $requestTransaction->ProductID)->firstOrFail();
+    //                     $rate = GameTypeProduct::where('game_type_id', $game_type->id)
+    //                         ->where('product_id', $product->id)
+    //                         ->firstOrFail()->rate;
+
+    //                     // Create seamless transaction
+    //                     $seamless_transactions[] = $event->transactions()->create([
+    //                         'user_id' => $event->user_id,
+    //                         'wager_id' => $wager->id,
+    //                         'game_type_id' => $game_type->id,
+    //                         'product_id' => $product->id,
+    //                         'seamless_transaction_id' => $requestTransaction->TransactionID,
+    //                         'rate' => $rate,
+    //                         'transaction_amount' => $requestTransaction->TransactionAmount,
+    //                         'bet_amount' => $requestTransaction->BetAmount,
+    //                         'valid_amount' => $requestTransaction->ValidBetAmount,
+    //                         'status' => $requestTransaction->Status,
+    //                     ]);
+    //                 });
+
+    //                 break;  // Exit loop if successful
+    //             } catch (\Illuminate\Database\QueryException $e) {
+    //                 if ($e->getCode() === '40001') {  // Deadlock error code
+    //                     $retryCount++;
+    //                     if ($retryCount >= $maxRetries) {
+    //                         throw $e;  // Max retries reached, fail
+    //                     }
+    //                     sleep(1);  // Wait before retrying
+    //                 } else {
+    //                     throw $e;  // Rethrow non-deadlock exceptions
+    //                 }
+    //             }
+    //         } while ($retryCount < $maxRetries);
+    //     }
+
+    //     return $seamless_transactions;
+    // }
 
     /**
      * Process the wallet transfer, handling deadlock retries.
