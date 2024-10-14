@@ -42,8 +42,25 @@ trait OptimizedBettingProcess
             // Create and store the event in the database
             $event = $this->createEvent($request);
 
-            // Create wager transactions
-            $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event);
+            // Retry logic for creating wager transactions
+            $retryCount = 0;
+            $maxRetries = 5;
+            do {
+                try {
+                    $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event);
+                    break;  // Exit loop if successful
+                } catch (\Illuminate\Database\QueryException $e) {
+                    if ($e->getCode() === '40001') {  // Deadlock error code
+                        $retryCount++;
+                        if ($retryCount >= $maxRetries) {
+                            throw $e;  // Max retries reached, fail
+                        }
+                        sleep(1);  // Wait before retrying
+                    } else {
+                        throw $e;  // Rethrow non-deadlock exceptions
+                    }
+                }
+            } while ($retryCount < $maxRetries);
 
             // Process each seamless transaction
             foreach ($seamless_transactions as $seamless_transaction) {
@@ -66,7 +83,7 @@ trait OptimizedBettingProcess
             $after_balance = $request->getMember()->balanceFloat;
 
             DB::commit();
-            Redis::del("wallet:lock:$userId");
+            Redis::del("wallet:lock::$userId");
 
             return response()->json([
                 'balance_before' => $before_balance,
@@ -75,10 +92,75 @@ trait OptimizedBettingProcess
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
-            Redis::del("wallet:lock:$userId");
+            Redis::del("wallet:lock::$userId");
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
+
+    // Your other methods like createWagerTransactions, processTransfer, and createEvent would remain the same as previously discussed
+
+    // public function placeBet(SlotWebhookRequest $request)
+    // {
+    //     $userId = $request->getMember()->id;
+
+    //     // Try to acquire a Redis lock for the user's wallet
+    //     $lock = Redis::set("wallet:lock:$userId", true, 'EX', 10, 'NX');  // 10-second lock
+
+    //     if (!$lock) {
+    //         return response()->json(['message' => 'The wallet is currently being updated. Please try again later.'], 409);
+    //     }
+
+    //     DB::beginTransaction();
+    //     try {
+    //         // Validate the request
+    //         $validator = $request->check();
+    //         if ($validator->fails()) {
+    //             Redis::del("wallet:lock:$userId");
+    //             return $validator->getResponse();
+    //         }
+
+    //         $before_balance = $request->getMember()->balanceFloat;
+
+    //         // Create and store the event in the database
+    //         $event = $this->createEvent($request);
+
+    //         // Create wager transactions
+    //         $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event);
+
+    //         // Process each seamless transaction
+    //         foreach ($seamless_transactions as $seamless_transaction) {
+    //             $this->processTransfer(
+    //                 $request->getMember(),
+    //                 User::adminUser(),
+    //                 TransactionName::Stake,
+    //                 $seamless_transaction->transaction_amount,
+    //                 $seamless_transaction->rate,
+    //                 [
+    //                     'wager_id' => $seamless_transaction->wager_id,
+    //                     'event_id' => $request->getMessageID(),
+    //                     'seamless_transaction_id' => $seamless_transaction->id,
+    //                 ]
+    //             );
+    //         }
+
+    //         // Refresh balance after transactions
+    //         $request->getMember()->wallet->refreshBalance();
+    //         $after_balance = $request->getMember()->balanceFloat;
+
+    //         DB::commit();
+    //         Redis::del("wallet:lock:$userId");
+
+    //         return response()->json([
+    //             'balance_before' => $before_balance,
+    //             'balance_after' => $after_balance,
+    //             'message' => 'Bet placed successfully.',
+    //         ], 200);
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         Redis::del("wallet:lock:$userId");
+    //         return response()->json(['message' => $e->getMessage()], 500);
+    //     }
+    // }
 
     /**
      * Create seamless transactions and handle deadlock retries.
