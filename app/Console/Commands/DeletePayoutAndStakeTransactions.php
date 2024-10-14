@@ -23,7 +23,7 @@ class DeletePayoutAndStakeTransactions extends Command
 
         // Process and delete records in smaller chunks to avoid memory overload and lock issues
         DB::table('transactions')
-            ->whereIn('name', ['payout', 'stake', 'cancel', 'rollback'])
+            ->whereIn('name', ['payout', 'stake', 'cancel', 'rollback', 'buy_in', 'buy_out'])
             ->orderBy('id')  // Ensure stable sorting to avoid missing records
             ->chunkById(100, function ($transactions) use (&$retryCount, $maxRetries) {
                 $transactionIds = $transactions->pluck('id')->toArray();
@@ -34,7 +34,7 @@ class DeletePayoutAndStakeTransactions extends Command
                         DB::table('transactions')->whereIn('id', $transactionIds)->delete();
 
                         // Output progress
-                        $this->info(count($transactions) . ' transactions deleted in this chunk.');
+                        $this->info(count($transactions) . ' transactions deleted in this chunk where name == payout, stake, cancel and rollback.');
                         break; // Exit the loop if successful
                     } catch (QueryException $e) {
                         if ($e->getCode() == 1205) { // Lock wait timeout error code
@@ -56,6 +56,6 @@ class DeletePayoutAndStakeTransactions extends Command
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // Output final message
-        $this->info('All transactions with name "payout" or "stake" have been processed.');
+        $this->info('All transactions with name "payout" or "stake" or "cancel", or "rollback" have been deleted.');
     }
 }
