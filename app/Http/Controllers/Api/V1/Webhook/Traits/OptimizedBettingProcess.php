@@ -90,49 +90,53 @@ trait OptimizedBettingProcess
      * Create seamless transactions with correct wager_id
      */
     public function createWagerTransactions($requestTransactions, SeamlessEvent $event, bool $refund = false)
-    {
-        $wagerData = [];
-        $seamless_transactions = [];
+{
+    $wagerData = [];
+    $seamless_transactions = [];
 
-        foreach ($requestTransactions as $requestTransaction) {
-            // Collect data for batch insert
-            $wagerData[] = [
-                'user_id' => $event->user_id,
-                'seamless_wager_id' => $requestTransaction->WagerID,
-                'status' => $refund ? WagerStatus::Refund : ($requestTransaction->TransactionAmount > 0 ? WagerStatus::Win : WagerStatus::Lose),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        // Perform batch insert for wagers and get the inserted wagers with IDs
-        $wagerIds = DB::table('wagers')->insertGetId($wagerData);
-
-        // Now create seamless transactions
-        foreach ($requestTransactions as $requestTransaction) {
-            $game_type = GameType::where('code', $requestTransaction->GameType)->firstOrFail();
-            $product = Product::where('code', $requestTransaction->ProductID)->firstOrFail();
-            $rate = GameTypeProduct::where('game_type_id', $game_type->id)
-                ->where('product_id', $product->id)
-                ->firstOrFail()->rate;
-
-            // Ensure wager_id is passed to seamless transactions
-            $seamless_transactions[] = $event->transactions()->create([
-                'user_id' => $event->user_id,
-                'wager_id' => $wagerIds, // Make sure this is the correct wager_id
-                'game_type_id' => $game_type->id,
-                'product_id' => $product->id,
-                'seamless_transaction_id' => $requestTransaction->TransactionID,
-                'rate' => $rate,
-                'transaction_amount' => $requestTransaction->TransactionAmount,
-                'bet_amount' => $requestTransaction->BetAmount,
-                'valid_amount' => $requestTransaction->ValidBetAmount,
-                'status' => $requestTransaction->Status,
-            ]);
-        }
-
-        return $seamless_transactions;
+    // Collect data for batch insert
+    foreach ($requestTransactions as $requestTransaction) {
+        $wagerData[] = [
+            'user_id' => $event->user_id,
+            'seamless_wager_id' => $requestTransaction->WagerID,
+            'status' => $refund ? WagerStatus::Refund : ($requestTransaction->TransactionAmount > 0 ? WagerStatus::Win : WagerStatus::Lose),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
     }
+
+    // Perform batch insert for wagers
+    DB::table('wagers')->insert($wagerData);
+
+    // Fetch the inserted wagers using seamless_wager_id or some other identifier
+    $wagerIds = Wager::whereIn('seamless_wager_id', array_column($wagerData, 'seamless_wager_id'))->pluck('id', 'seamless_wager_id');
+
+    // Now create seamless transactions
+    foreach ($requestTransactions as $requestTransaction) {
+        $game_type = GameType::where('code', $requestTransaction->GameType)->firstOrFail();
+        $product = Product::where('code', $requestTransaction->ProductID)->firstOrFail();
+        $rate = GameTypeProduct::where('game_type_id', $game_type->id)
+            ->where('product_id', $product->id)
+            ->firstOrFail()->rate;
+
+        // Ensure wager_id is passed to seamless transactions
+        $seamless_transactions[] = $event->transactions()->create([
+            'user_id' => $event->user_id,
+            'wager_id' => $wagerIds[$requestTransaction->WagerID], // Fetch correct wager_id
+            'game_type_id' => $game_type->id,
+            'product_id' => $product->id,
+            'seamless_transaction_id' => $requestTransaction->TransactionID,
+            'rate' => $rate,
+            'transaction_amount' => $requestTransaction->TransactionAmount,
+            'bet_amount' => $requestTransaction->BetAmount,
+            'valid_amount' => $requestTransaction->ValidBetAmount,
+            'status' => $requestTransaction->Status,
+        ]);
+    }
+
+    return $seamless_transactions;
+}
+
 
     /**
      * Process the wallet transfer, handling deadlock retries.
