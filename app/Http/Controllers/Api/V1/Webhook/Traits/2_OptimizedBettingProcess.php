@@ -42,9 +42,9 @@ trait OptimizedBettingProcess
             // Create and store the event in the database
             $event = $this->createEvent($request);
 
-            // Batch create wager transactions with retry logic
+            // Retry logic for creating wager transactions with exponential backoff
             $seamless_transactions = $this->retryOnDeadlock(function () use ($validator, $event) {
-                return $this->createBatchWagerTransactions($validator->getRequestTransactions(), $event);
+                return $this->createWagerTransactions($validator->getRequestTransactions(), $event);
             });
 
             // Process each seamless transaction
@@ -83,47 +83,57 @@ trait OptimizedBettingProcess
     }
 
     /**
-     * Batch creation of wagers in a single insert to avoid deadlocks.
+     * Create seamless transactions and handle deadlock retries.
      */
-    public function createBatchWagerTransactions($requestTransactions, SeamlessEvent $event, bool $refund = false)
+    public function createWagerTransactions($requestTransactions, SeamlessEvent $event, bool $refund = false)
     {
-        $wagerData = [];
         $seamless_transactions = [];
 
         foreach ($requestTransactions as $requestTransaction) {
-            // Collect data for batch insert
-            $wagerData[] = [
-                'user_id' => $event->user_id,
-                'seamless_wager_id' => $requestTransaction->WagerID,
-                'status' => $refund ? WagerStatus::Refund : ($requestTransaction->TransactionAmount > 0 ? WagerStatus::Win : WagerStatus::Lose),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
+            DB::transaction(function () use (&$seamless_transactions, $event, $requestTransaction, $refund) {
+                // Lock for update first to avoid deadlock
+                $existingWager = Wager::where('seamless_wager_id', $requestTransaction->WagerID)
+                    ->lockForUpdate()
+                    ->first();
 
-        // Perform batch insert for wagers
-        DB::table('wagers')->insert($wagerData);
+                if (!$existingWager) {
+                    // Create a new wager if it does not exist
+                    $wager = Wager::create([
+                        'user_id' => $event->user_id,
+                        'seamless_wager_id' => $requestTransaction->WagerID,
+                    ]);
+                } else {
+                    $wager = $existingWager;
+                }
 
-        // Now create seamless transactions
-        foreach ($requestTransactions as $requestTransaction) {
-            $game_type = GameType::where('code', $requestTransaction->GameType)->firstOrFail();
-            $product = Product::where('code', $requestTransaction->ProductID)->firstOrFail();
-            $rate = GameTypeProduct::where('game_type_id', $game_type->id)
-                ->where('product_id', $product->id)
-                ->firstOrFail()->rate;
+                // Update wager status
+                if ($refund) {
+                    $wager->update(['status' => WagerStatus::Refund]);
+                } elseif (!$wager->wasRecentlyCreated) {
+                    $wager->update(['status' => $requestTransaction->TransactionAmount > 0 ? WagerStatus::Win : WagerStatus::Lose]);
+                }
 
-            // Create seamless transaction
-            $seamless_transactions[] = $event->transactions()->create([
-                'user_id' => $event->user_id,
-                'game_type_id' => $game_type->id,
-                'product_id' => $product->id,
-                'seamless_transaction_id' => $requestTransaction->TransactionID,
-                'rate' => $rate,
-                'transaction_amount' => $requestTransaction->TransactionAmount,
-                'bet_amount' => $requestTransaction->BetAmount,
-                'valid_amount' => $requestTransaction->ValidBetAmount,
-                'status' => $requestTransaction->Status,
-            ]);
+                // Retrieve game type and product
+                $game_type = GameType::where('code', $requestTransaction->GameType)->firstOrFail();
+                $product = Product::where('code', $requestTransaction->ProductID)->firstOrFail();
+                $rate = GameTypeProduct::where('game_type_id', $game_type->id)
+                    ->where('product_id', $product->id)
+                    ->firstOrFail()->rate;
+
+                // Create seamless transaction
+                $seamless_transactions[] = $event->transactions()->create([
+                    'user_id' => $event->user_id,
+                    'wager_id' => $wager->id,
+                    'game_type_id' => $game_type->id,
+                    'product_id' => $product->id,
+                    'seamless_transaction_id' => $requestTransaction->TransactionID,
+                    'rate' => $rate,
+                    'transaction_amount' => $requestTransaction->TransactionAmount,
+                    'bet_amount' => $requestTransaction->BetAmount,
+                    'valid_amount' => $requestTransaction->ValidBetAmount,
+                    'status' => $requestTransaction->Status,
+                ]);
+            });
         }
 
         return $seamless_transactions;
