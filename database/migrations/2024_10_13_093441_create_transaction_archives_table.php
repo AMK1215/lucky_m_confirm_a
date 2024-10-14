@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('transaction_archives', function (Blueprint $table) {
- $table->bigIncrements('id');
+            $table->bigIncrements('id');
             $table->string('payable_type', 191);
             $table->unsignedBigInteger('payable_id');
             $table->unsignedBigInteger('wallet_id');
