@@ -33,8 +33,9 @@ class DownloadGameImages extends Command
         $jsonFilePath = base_path('app/Console/Commands/json_data/pg_soft.json');
 
         // Check if the JSON file exists
-        if (!File::exists($jsonFilePath)) {
-            $this->error('JSON file not found at ' . $jsonFilePath);
+        if (! File::exists($jsonFilePath)) {
+            $this->error('JSON file not found at '.$jsonFilePath);
+
             return 1;
         }
 
@@ -43,7 +44,8 @@ class DownloadGameImages extends Command
         $gamesData = json_decode($jsonData, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->error('Error decoding JSON: ' . json_last_error_msg());
+            $this->error('Error decoding JSON: '.json_last_error_msg());
+
             return 1;
         }
 
@@ -52,7 +54,7 @@ class DownloadGameImages extends Command
 
         // Create directory to store images
         $directoryPath = public_path('assets/slot_app/pg_soft');
-        if (!File::exists($directoryPath)) {
+        if (! File::exists($directoryPath)) {
             File::makeDirectory($directoryPath, 0755, true);
         }
 
@@ -62,15 +64,16 @@ class DownloadGameImages extends Command
         }
 
         $this->info('All images have been downloaded.');
+
         return 0;
     }
 
     /**
      * Download the image and save it with the game name.
      *
-     * @param string $url
-     * @param string $gameName
-     * @param string $directory
+     * @param  string  $url
+     * @param  string  $gameName
+     * @param  string  $directory
      * @return void
      */
     private function downloadImage($url, $gameName, $directory)
@@ -78,11 +81,11 @@ class DownloadGameImages extends Command
         $response = Http::get($url);
 
         if ($response->successful()) {
-            $fileName = str_replace(' ', '_', $gameName) . '.png';
-            File::put($directory . '/' . $fileName, $response->body());
-            $this->info($fileName . ' downloaded successfully.');
+            $fileName = str_replace(' ', '_', $gameName).'.png';
+            File::put($directory.'/'.$fileName, $response->body());
+            $this->info($fileName.' downloaded successfully.');
         } else {
-            $this->error('Failed to download image for ' . $gameName);
+            $this->error('Failed to download image for '.$gameName);
         }
     }
 }

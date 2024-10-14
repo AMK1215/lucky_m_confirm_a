@@ -32,10 +32,10 @@ class PlaceBetRedisController extends Controller
 
             // Cache event in Redis
             $ttl = 600; // Time-to-live in seconds
-            Redis::setex('event:' . $request->getMessageID(), $ttl, json_encode($request->all()));
+            Redis::setex('event:'.$request->getMessageID(), $ttl, json_encode($request->all()));
 
             // Retrieve cached data from Redis (optional)
-            $cachedData = Redis::get('event:' . $request->getMessageID());
+            $cachedData = Redis::get('event:'.$request->getMessageID());
             $cachedDataArray = json_decode($cachedData, true);
 
             // Create and store the event in the database

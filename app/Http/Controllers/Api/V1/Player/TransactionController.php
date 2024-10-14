@@ -26,9 +26,9 @@ class TransactionController extends Controller
         $user = auth()->user();
 
         $transactions = $user->transactions()->whereBetween('created_at', [$from, $to])
-                        ->whereIn('transactions.name', ['debit_transfer', 'credit_transfer'])
-                        ->orderBy('id', 'DESC')
-                        ->paginate();
+            ->whereIn('transactions.name', ['debit_transfer', 'credit_transfer'])
+            ->orderBy('id', 'DESC')
+            ->paginate();
 
         return $this->success(TransactionResource::collection($transactions));
     }

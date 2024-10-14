@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('report_archives', function (Blueprint $table) {
- $table->id();
+            $table->id();
             $table->string('member_name');
             $table->string('wager_id');
             $table->unsignedBigInteger('product_code');

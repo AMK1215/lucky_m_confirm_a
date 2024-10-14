@@ -21,7 +21,6 @@ class GameController extends Controller
         return $this->success($gameType);
     }
 
-
     public function gameTypeProducts($gameTypeID)
     {
         $gameLobby = GameType::with(['products' => function ($query) {

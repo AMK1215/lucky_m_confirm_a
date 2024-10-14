@@ -34,8 +34,9 @@ class DownloadedImageUpdateToDB extends Command
         $jsonFilePath = base_path('app/Console/Commands/json_data/Jili.json');
 
         // Check if the JSON file exists
-        if (!File::exists($jsonFilePath)) {
-            $this->error('JSON file not found at ' . $jsonFilePath);
+        if (! File::exists($jsonFilePath)) {
+            $this->error('JSON file not found at '.$jsonFilePath);
+
             return 1;
         }
 
@@ -44,7 +45,8 @@ class DownloadedImageUpdateToDB extends Command
         $gamesData = json_decode($jsonData, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->error('Error decoding JSON: ' . json_last_error_msg());
+            $this->error('Error decoding JSON: '.json_last_error_msg());
+
             return 1;
         }
 
@@ -53,7 +55,7 @@ class DownloadedImageUpdateToDB extends Command
 
         // Create directory to store images
         $directoryPath = public_path('assets/slot_app/jili');
-        if (!File::exists($directoryPath)) {
+        if (! File::exists($directoryPath)) {
             File::makeDirectory($directoryPath, 0755, true);
         }
 
@@ -66,15 +68,16 @@ class DownloadedImageUpdateToDB extends Command
         }
 
         $this->info('All images have been downloaded and database updated.');
+
         return 0;
     }
 
     /**
      * Download the image and save it with the game name.
      *
-     * @param string $url
-     * @param string $gameName
-     * @param string $directory
+     * @param  string  $url
+     * @param  string  $gameName
+     * @param  string  $directory
      * @return void
      */
     private function downloadImage($url, $gameName, $directory)
@@ -82,44 +85,45 @@ class DownloadedImageUpdateToDB extends Command
         $response = Http::get($url);
 
         if ($response->successful()) {
-            $fileName = str_replace(' ', '_', $gameName) . '.png';
-            File::put($directory . '/' . $fileName, $response->body());
-            $this->info($fileName . ' downloaded successfully.');
+            $fileName = str_replace(' ', '_', $gameName).'.png';
+            File::put($directory.'/'.$fileName, $response->body());
+            $this->info($fileName.' downloaded successfully.');
         } else {
-            $this->error('Failed to download image for ' . $gameName);
+            $this->error('Failed to download image for '.$gameName);
         }
     }
 
     /**
      * Update the game image URL in the game_lists table.
      *
-     * @param string $gameCode
-     * @param string $imageUrl
+     * @param  string  $gameCode
+     * @param  string  $imageUrl
      * @return void
      */
     private function updateGameImageInDatabase($gameCode, $imageUrl)
-{
-    // Log the GameCode and product_id being checked
-    $this->info("Checking game with GameCode: $gameCode and product_id: 31.");
+    {
+        // Log the GameCode and product_id being checked
+        $this->info("Checking game with GameCode: $gameCode and product_id: 31.");
 
-    $game = DB::table('game_lists')
-        ->where('code', $gameCode)
-        ->where('product_id', 31)
-        ->first();
+        $game = DB::table('game_lists')
+            ->where('code', $gameCode)
+            ->where('product_id', 31)
+            ->first();
 
-    if (!$game) {
-        $this->error("No game found with GameCode: $gameCode and product_id = 35.");
-        return;
+        if (! $game) {
+            $this->error("No game found with GameCode: $gameCode and product_id = 35.");
+
+            return;
+        }
+
+        // If game exists, update image_url
+        DB::table('game_lists')
+            ->where('code', $gameCode)
+            ->where('product_id', 35)
+            ->update(['image_url' => $imageUrl]);
+
+        $this->info("Database updated successfully for GameCode: $gameCode.");
     }
-
-    // If game exists, update image_url
-    DB::table('game_lists')
-        ->where('code', $gameCode)
-        ->where('product_id', 35)
-        ->update(['image_url' => $imageUrl]);
-
-    $this->info("Database updated successfully for GameCode: $gameCode.");
-}
 
     // private function updateGameImageInDatabase($gameCode, $imageUrl)
     // {
