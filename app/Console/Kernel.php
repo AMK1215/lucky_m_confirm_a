@@ -20,7 +20,8 @@ class Kernel extends ConsoleKernel
         Commands\ArchiveOldTransactions::class,
         Commands\ArchiveOldWagers::class,
         Commands\DeletePayoutAndStakeTransactions::class,
-        Commands\RecalculatePlayerBalances::class
+        Commands\RecalculatePlayerBalances::class,
+        Commands\DeleteOldWagerBackups::class
     ];
 
     /**
