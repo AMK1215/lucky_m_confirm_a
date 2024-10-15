@@ -111,11 +111,11 @@ trait OptimizedBettingProcess
      * Creates wagers in chunks and inserts them along with related seamless transactions.
      *
      */
-    public function createWagerTransactions(array $betBatch, SlotWebhookRequest $request)
+    public function createWagerTransactions(array $betBatch, SeamlessEvent $event)
 {
     $retryCount = 0;
     $maxRetries = 5;
-    $userId = $request->getMember()->id; // Get user_id from the request
+    $userId = $event->user_id;// Get user_id from the SeamlessEvent
 
     // Retry logic for deadlock handling
     do {
