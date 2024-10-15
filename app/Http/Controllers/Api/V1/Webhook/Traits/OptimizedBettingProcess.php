@@ -106,11 +106,11 @@ trait OptimizedBettingProcess
     /**
      * Creates wagers in chunks and inserts them along with related seamless transactions.
      */
-        public function createWagerTransactions(array $betBatch, SlotWebhookRequest $request)
+        public function createWagerTransactions(array $betBatch, SeamlessEvent $event)
 {
     $retryCount = 0;
     $maxRetries = 5;
-    $userId = $request->getMember()->id; // Get user_id from the request
+    $userId = $event->user_id; // Use the user_id from the SeamlessEvent
 
     // Retry logic for deadlock handling
     do {
@@ -127,9 +127,9 @@ trait OptimizedBettingProcess
                         throw new \Exception('Invalid transaction data format.');
                     }
 
-                    // Create the RequestTransaction object using the user_id from the request
+                    // Create the RequestTransaction object using the user_id from SeamlessEvent
                     $requestTransaction = new \App\Services\Slot\Dto\RequestTransaction(
-                        $userId,           // Use user_id from the request
+                        $userId,  // Use user_id from the SeamlessEvent
                         $transaction['Status'],
                         $transaction['ProductID'],
                         $transaction['GameType'],
@@ -152,7 +152,7 @@ trait OptimizedBettingProcess
                     if (!$existingWager) {
                         // Collect wager data for batch insert
                         $wagerData[] = [
-                            'user_id' => $userId,  // Use user_id from the request
+                            'user_id' => $userId,  // Use user_id from the SeamlessEvent
                             'seamless_wager_id' => $transaction['WagerID'],
                             'status' => $transaction['TransactionAmount'] > 0 ? WagerStatus::Win : WagerStatus::Lose,
                             'created_at' => now(),
@@ -162,7 +162,7 @@ trait OptimizedBettingProcess
 
                     // Collect seamless transaction data for batch insert
                     $seamlessTransactionsData[] = [
-                        'user_id' => $userId,  // Use user_id from the request
+                        'user_id' => $userId,  // Use user_id from the SeamlessEvent
                         'wager_id' => $existingWager ? $existingWager->id : null,
                         'game_type_id' => $transaction['ActualGameTypeID'],
                         'product_id' => $transaction['ActualProductID'],
@@ -202,6 +202,7 @@ trait OptimizedBettingProcess
         }
     } while ($retryCount < $maxRetries);
 }
+
 
 
 

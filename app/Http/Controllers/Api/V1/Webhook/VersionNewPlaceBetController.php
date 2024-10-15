@@ -46,7 +46,7 @@ class VersionNewPlaceBetController extends Controller
             $event = $this->createEvent($request);
 
             // Create wager transactions related to the event
-            $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event, $userId);
+            $seamless_transactions = $this->createWagerTransactions($validator->getRequestTransactions(), $event);
 
             // Process each seamless transaction
             foreach ($seamless_transactions as $seamless_transaction) {
