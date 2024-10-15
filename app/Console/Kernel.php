@@ -19,7 +19,8 @@ class Kernel extends ConsoleKernel
         Commands\ArchiveOldReports::class,
         Commands\ArchiveOldTransactions::class,
         Commands\ArchiveOldWagers::class,
-        Commands\DeletePayoutAndStakeTransactions::class
+        Commands\DeletePayoutAndStakeTransactions::class,
+        Commands\RecalculatePlayerBalances::class
     ];
 
     /**
@@ -33,6 +34,7 @@ class Kernel extends ConsoleKernel
         //$schedule->command('archive:old-reports')->dailyAt('15:10');  // Runs every day at 2 AM
         //$schedule->command('archive:old-transactions')->dailyAt('02:00');
         $schedule->command('archive:old-wagers')->daily();  // You can adjust the schedule as needed
+       $schedule->command('players:recalculate-balances')->daily();
         $schedule->command('transactions:delete-payout-stake')->daily();
 
         //$schedule->job(new SyncWalletBalanceToDatabase)->everyFiveSeconds()->sendOutputTo(storage_path('logs/sync_wallet.log')); // Save output to custom log;  // or adjust as needed
