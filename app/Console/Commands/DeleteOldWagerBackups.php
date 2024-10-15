@@ -26,10 +26,11 @@ class DeleteOldWagerBackups extends Command
             ->chunk(1000, function ($oldWagers) {
                 if ($oldWagers->isEmpty()) {
                     $this->info('No wagers found to delete.');
+
                     return;
                 }
 
-                $this->info(count($oldWagers) . ' wagers found for deletion.');
+                $this->info(count($oldWagers).' wagers found for deletion.');
 
                 DB::transaction(function () use ($oldWagers) {
                     // Fetch the IDs of the old wagers
@@ -40,7 +41,7 @@ class DeleteOldWagerBackups extends Command
                     DB::table('wager_backups')->whereIn('id', $wagerIds)->delete();
                     DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-                    $this->info(count($oldWagers) . ' wagers have been deleted successfully.');
+                    $this->info(count($oldWagers).' wagers have been deleted successfully.');
                 });
             });
     }

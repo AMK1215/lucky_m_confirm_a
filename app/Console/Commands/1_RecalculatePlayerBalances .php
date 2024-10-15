@@ -1,13 +1,15 @@
 <?php
 
 namespace App\Console\Commands;
+
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
 
 class RecalculatePlayerBalances extends Command
 {
     protected $signature = 'players:recalculate-balances';
+
     protected $description = 'Recalculate player balances based on remaining transactions after deletion';
 
     public function handle()
@@ -27,7 +29,7 @@ class RecalculatePlayerBalances extends Command
                 ->where('user_id', $user->id)
                 ->update(['balance' => $newBalance]);
 
-            $this->info('Recalculated balance for user ' . $user->id . ': ' . $newBalance);
+            $this->info('Recalculated balance for user '.$user->id.': '.$newBalance);
         }
 
         $this->info('All player balances have been recalculated.');

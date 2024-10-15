@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 
 class DeletePayoutAndStakeTransactions extends Command
 {
@@ -34,12 +34,12 @@ class DeletePayoutAndStakeTransactions extends Command
                         DB::table('transactions')->whereIn('id', $transactionIds)->delete();
 
                         // Output progress
-                        $this->info(count($transactions) . ' transactions deleted in this chunk where name == payout, stake, cancel and rollback.');
+                        $this->info(count($transactions).' transactions deleted in this chunk where name == payout, stake, cancel and rollback.');
                         break; // Exit the loop if successful
                     } catch (QueryException $e) {
                         if ($e->getCode() == 1205) { // Lock wait timeout error code
                             $retryCount++;
-                            $this->warn('Lock wait timeout exceeded, retrying... (' . $retryCount . '/' . $maxRetries . ')');
+                            $this->warn('Lock wait timeout exceeded, retrying... ('.$retryCount.'/'.$maxRetries.')');
                             sleep(2); // Wait for 2 seconds before retrying
                         } else {
                             throw $e; // Rethrow if it's not a lock timeout error

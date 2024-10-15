@@ -86,101 +86,106 @@ trait OptimizedBettingProcess
     }
 
     public function insertBets(array $bets)
-{
-    $chunkSize = 1000; // Define the chunk size
-    $batches = array_chunk($bets, $chunkSize);
+    {
+        $chunkSize = 1000; // Define the chunk size
+        $batches = array_chunk($bets, $chunkSize);
 
-    // Process chunks in a transaction to ensure data integrity
-    DB::transaction(function () use ($batches) {
-        foreach ($batches as $batch) {
-            $this->createWagerTransactions($batch);
-        }
-    });
+        // Process chunks in a transaction to ensure data integrity
+        DB::transaction(function () use ($batches) {
+            foreach ($batches as $batch) {
+                $this->createWagerTransactions($batch);
+            }
+        });
 
-    return count($bets) . ' bets inserted successfully.';
-}
+        return count($bets).' bets inserted successfully.';
+    }
 
-/**
- * Creates wagers in chunks and inserts them along with related seamless transactions.
- */
-public function createWagerTransactions(array $betBatch)
-{
-    $retryCount = 0;
-    $maxRetries = 5;
+    /**
+     * Creates wagers in chunks and inserts them along with related seamless transactions.
+     */
+    public function createWagerTransactions(array $betBatch)
+    {
+        $retryCount = 0;
+        $maxRetries = 5;
 
-    // Retry logic for deadlock handling
-    do {
-        try {
-            DB::transaction(function () use ($betBatch) {
-                // Initialize arrays for batch inserts
-                $wagerData = [];
-                $seamlessTransactionsData = [];
+        // Retry logic for deadlock handling
+        do {
+            try {
+                DB::transaction(function () use ($betBatch) {
+                    // Initialize arrays for batch inserts
+                    $wagerData = [];
+                    $seamlessTransactionsData = [];
 
-                // Loop through each bet in the batch
-                foreach ($betBatch as $bet) {
-                    // Check if wager already exists
-                    $existingWager = Wager::where('seamless_wager_id', $bet['WagerID'])->lockForUpdate()->first();
+                    // Loop through each bet in the batch
+                    foreach ($betBatch as $bet) {
+                        // Ensure that $bet is an instance of RequestTransaction
+                        if (! ($bet instanceof \App\Services\Slot\Dto\RequestTransaction)) {
+                            throw new \Exception('Invalid data type for bet');
+                        }
 
-                    if (!$existingWager) {
-                        // Collect wager data for batch insert
-                        $wagerData[] = [
-                            'user_id' => $bet['user_id'],
-                            'seamless_wager_id' => $bet['WagerID'],
-                            'status' => $bet['TransactionAmount'] > 0 ? WagerStatus::Win : WagerStatus::Lose,
+                        // Check if wager already exists
+                        $existingWager = Wager::where('seamless_wager_id', $bet->WagerID)->lockForUpdate()->first();
+
+                        if (! $existingWager) {
+                            // Collect wager data for batch insert
+                            $wagerData[] = [
+                                'user_id' => $bet->user_id,  // Assuming this is part of RequestTransaction
+                                'seamless_wager_id' => $bet->WagerID,
+                                'status' => $bet->TransactionAmount > 0 ? WagerStatus::Win : WagerStatus::Lose,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
+                        }
+
+                        // Retrieve game type, product, and rate
+                        $gameType = GameType::where('code', $bet->GameType)->firstOrFail();
+                        $product = Product::where('code', $bet->ProductID)->firstOrFail();
+                        $rate = GameTypeProduct::where('game_type_id', $gameType->id)
+                            ->where('product_id', $product->id)
+                            ->firstOrFail()->rate;
+
+                        // Collect seamless transaction data for batch insert
+                        $seamlessTransactionsData[] = [
+                            'user_id' => $bet->user_id,  // Assuming this is part of RequestTransaction
+                            'wager_id' => $existingWager ? $existingWager->id : null, // link to existing or newly created wager
+                            'game_type_id' => $gameType->id,
+                            'product_id' => $product->id,
+                            'seamless_transaction_id' => $bet->TransactionID,
+                            'rate' => $rate,
+                            'transaction_amount' => $bet->TransactionAmount,
+                            'bet_amount' => $bet->BetAmount,
+                            'valid_amount' => $bet->ValidBetAmount,
+                            'status' => $bet->Status,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];
                     }
 
-                    // Retrieve game type, product, and rate
-                    $gameType = GameType::where('code', $bet['GameType'])->firstOrFail();
-                    $product = Product::where('code', $bet['ProductID'])->firstOrFail();
-                    $rate = GameTypeProduct::where('game_type_id', $gameType->id)
-                        ->where('product_id', $product->id)
-                        ->firstOrFail()->rate;
+                    // Perform batch inserts
+                    if (! empty($wagerData)) {
+                        DB::table('wagers')->insert($wagerData); // Insert wagers in bulk
+                    }
 
-                    // Collect seamless transaction data for batch insert
-                    $seamlessTransactionsData[] = [
-                        'user_id' => $bet['user_id'],
-                        'wager_id' => $existingWager ? $existingWager->id : null, // link to existing or newly created wager
-                        'game_type_id' => $gameType->id,
-                        'product_id' => $product->id,
-                        'seamless_transaction_id' => $bet['TransactionID'],
-                        'rate' => $rate,
-                        'transaction_amount' => $bet['TransactionAmount'],
-                        'bet_amount' => $bet['BetAmount'],
-                        'valid_amount' => $bet['ValidBetAmount'],
-                        'status' => $bet['Status'],
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
+                    if (! empty($seamlessTransactionsData)) {
+                        DB::table('seamless_transactions')->insert($seamlessTransactionsData); // Insert transactions in bulk
+                    }
+                });
+
+                break; // Exit the retry loop if successful
+
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($e->getCode() === '40001') { // Deadlock error code
+                    $retryCount++;
+                    if ($retryCount >= $maxRetries) {
+                        throw $e; // Max retries reached, fail
+                    }
+                    sleep(1); // Wait for a second before retrying
+                } else {
+                    throw $e; // Rethrow if it's not a deadlock exception
                 }
-
-                // Perform batch inserts
-                if (!empty($wagerData)) {
-                    DB::table('wagers')->insert($wagerData); // Insert wagers in bulk
-                }
-
-                if (!empty($seamlessTransactionsData)) {
-                    DB::table('seamless_transactions')->insert($seamlessTransactionsData); // Insert transactions in bulk
-                }
-            });
-
-            break; // Exit the retry loop if successful
-
-        } catch (\Illuminate\Database\QueryException $e) {
-            if ($e->getCode() === '40001') { // Deadlock error code
-                $retryCount++;
-                if ($retryCount >= $maxRetries) {
-                    throw $e; // Max retries reached, fail
-                }
-                sleep(1); // Wait for a second before retrying
-            } else {
-                throw $e; // Rethrow if it's not a deadlock exception
             }
-        }
-    } while ($retryCount < $maxRetries);
-}
+        } while ($retryCount < $maxRetries);
+    }
 
     /**
      * Create seamless transactions and handle deadlock retries.

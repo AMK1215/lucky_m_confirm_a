@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
 
 class RecalculatePlayerBalances extends Command
 {
@@ -35,7 +35,7 @@ class RecalculatePlayerBalances extends Command
                 ->where('holder_type', 'App\Models\User')  // Also ensure that the holder_type matches the User model
                 ->update(['balance' => $newBalance]);
 
-            $this->info('Recalculated balance for user ' . $user->id . ': ' . $newBalance);
+            $this->info('Recalculated balance for user '.$user->id.': '.$newBalance);
         }
 
         $this->info('All player balances have been recalculated.');
