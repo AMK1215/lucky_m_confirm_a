@@ -191,13 +191,13 @@ class GameTypeProductTableSeeder extends Seeder
             [
                 'product_id' => 23,
                 'game_type_id' => 1,
-                'image' => 'Felix-Gaming.png',
+                'image' => 'felix_gaming.png',
                 'rate' => '1.0000',
             ],
             [
                 'product_id' => 24,
                 'game_type_id' => 1,
-                'image' => 'zeusplay.png',
+                'image' => 'zeus_play.png',
                 'rate' => '1.0000',
             ],
             [
@@ -216,7 +216,7 @@ class GameTypeProductTableSeeder extends Seeder
             [
                 'product_id' => 27,
                 'game_type_id' => 1,
-                'image' => 'gamingworld.png',
+                'image' => 'gaming_world.png',
                 'rate' => '1.0000',
             ],
             [
