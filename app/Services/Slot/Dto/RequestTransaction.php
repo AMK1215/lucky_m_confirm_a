@@ -7,7 +7,7 @@ use Spatie\LaravelData\Data;
 class RequestTransaction extends Data
 {
     public function __construct(
-        public int $user_id,
+        //public int $user_id,
         public int $Status,
         public string $ProductID,
         public int $GameType,

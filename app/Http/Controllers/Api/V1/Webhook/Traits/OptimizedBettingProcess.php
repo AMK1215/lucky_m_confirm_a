@@ -128,7 +128,7 @@ trait OptimizedBettingProcess
 
                         // Create the RequestTransaction object
                         $requestTransaction = new \App\Services\Slot\Dto\RequestTransaction(
-                            $transaction['user_id'],           // Ensure user_id is provided
+                            //$transaction['user_id'],           // Ensure user_id is provided
                             $transaction['Status'],
                             $transaction['ProductID'],
                             $transaction['GameType'],
@@ -151,7 +151,7 @@ trait OptimizedBettingProcess
                         if (! $existingWager) {
                             // Collect wager data for batch insert
                             $wagerData[] = [
-                                'user_id' => $transaction['user_id'],
+                                'user_id' => $transaction->user_id,
                                 'seamless_wager_id' => $transaction['WagerID'],
                                 'status' => $transaction['TransactionAmount'] > 0 ? WagerStatus::Win : WagerStatus::Lose,
                                 'created_at' => now(),
@@ -161,7 +161,7 @@ trait OptimizedBettingProcess
 
                         // Collect seamless transaction data for batch insert
                         $seamlessTransactionsData[] = [
-                            'user_id' => $transaction['user_id'],
+                            'user_id' => $transaction->user_id,
                             'wager_id' => $existingWager ? $existingWager->id : null,
                             'game_type_id' => $transaction['ActualGameTypeID'],
                             'product_id' => $transaction['ActualProductID'],
