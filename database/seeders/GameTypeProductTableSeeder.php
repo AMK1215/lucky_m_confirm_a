@@ -343,13 +343,13 @@ class GameTypeProductTableSeeder extends Seeder
             [
                 'product_id' => 45,
                 'game_type_id' => 1,
-                'image' => 'evoplay.png',
+                'image' => 'smart_soft.png',
                 'rate' => '1.0000',
             ],
             [
                 'product_id' => 46,
                 'game_type_id' => 1,
-                'image' => 'smart_soft.png',
+                'image' => 'evoplay.png',
                 'rate' => '1.0000',
             ],
         ];
