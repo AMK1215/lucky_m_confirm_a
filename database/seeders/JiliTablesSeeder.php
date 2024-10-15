@@ -14,6 +14,7 @@ class JiliTablesSeeder extends Seeder
      */
     public function run(): void
     {
+        // picutre
         $json = File::get(base_path('app/Console/Commands/data/JiliModify.json'));
         $data = json_decode($json);
         foreach ($data->ProviderGames as $obj) {
