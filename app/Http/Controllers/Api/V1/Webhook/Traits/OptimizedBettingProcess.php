@@ -88,20 +88,24 @@ trait OptimizedBettingProcess
     /**
      * Creates wagers in chunks and inserts them along with related seamless transactions.
      */
-    public function insertBets(array $bets)
-    {
-        $chunkSize = 1000; // Define the chunk size
-        $batches = array_chunk($bets, $chunkSize);
+    public function insertBets(array $bets, SeamlessEvent $event)
+{
+    $chunkSize = 1000; // Define the chunk size
+    $batches = array_chunk($bets, $chunkSize);
 
-        // Process chunks in a transaction to ensure data integrity
-        DB::transaction(function () use ($batches) {
-            foreach ($batches as $batch) {
-                $this->createWagerChunk($batch);
-            }
-        });
+    $userId = $event->user_id; // Get user_id from SeamlessEvent
 
-        return count($bets).' bets inserted successfully.';
-    }
+    // Process chunks in a transaction to ensure data integrity
+    DB::transaction(function () use ($batches, $userId, $event) {
+        foreach ($batches as $batch) {
+            // Call createWagerTransactions for each batch
+            $this->createWagerTransactions($batch, $event);
+        }
+    });
+
+    return count($bets).' bets inserted successfully.';
+}
+
 
     /**
      * Creates wagers in chunks and inserts them along with related seamless transactions.
