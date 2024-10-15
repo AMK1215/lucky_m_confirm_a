@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Redis;
 class VersionNewPlaceBetController extends Controller
 {
     use OptimizedBettingProcess;
-    public function placeBetNew(SlotWebhookRequest $request)
+   public function placeBetNew(SlotWebhookRequest $request)
     {
         $userId = $request->getMember()->id;
 
@@ -33,7 +33,7 @@ class VersionNewPlaceBetController extends Controller
 
         if ($validator->fails()) {
             // Release Redis lock and return validation error response
-            Redis::del("wallet:lock:$userId");
+            Redis::del("wallet:lock::$userId");
 
             return $validator->getResponse();
         }
@@ -41,12 +41,16 @@ class VersionNewPlaceBetController extends Controller
         // Retrieve transactions from the request
         $transactions = $validator->getRequestTransactions();
 
+        // Debugging: Log the transactions to check the structure
+        Log::info('Transactions received:', ['transactions' => $transactions]);
+
         // Check if the transactions are in the expected format
         if (!is_array($transactions) || empty($transactions)) {
-            Redis::del("wallet:lock:$userId");
+            Redis::del("wallet:lock::$userId");
 
             return response()->json([
                 'message' => 'Invalid transaction data format.',
+                'details' => $transactions,  // Provide details about the received data for debugging
             ], 400);  // 400 Bad Request
         }
 
@@ -66,7 +70,7 @@ class VersionNewPlaceBetController extends Controller
 
             DB::commit();
 
-            Redis::del("wallet:lock:$userId");
+            Redis::del("wallet:lock::$userId");
 
             // Return success response
             return SlotWebhookService::buildResponse(
@@ -76,7 +80,7 @@ class VersionNewPlaceBetController extends Controller
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            Redis::del("wallet:lock:$userId");
+            Redis::del("wallet:lock::$userId");
             Log::error('Error during placeBet', ['error' => $e]);
 
             return response()->json([
@@ -84,7 +88,6 @@ class VersionNewPlaceBetController extends Controller
             ], 500);
         }
     }
-
 
     // public function placeBetNew(SlotWebhookRequest $request)
     // {
