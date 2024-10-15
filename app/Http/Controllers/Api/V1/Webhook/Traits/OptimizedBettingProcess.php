@@ -122,49 +122,26 @@ public function createWagerTransactions(array $betBatch)
                 $seamlessTransactionsData = [];
 
                 // Loop through each bet in the batch
-                foreach ($betBatch as $bet) {
-                    // Ensure that $bet is an instance of RequestTransaction
-                    if (!($bet instanceof \App\Services\Slot\Dto\RequestTransaction)) {
-                        throw new \Exception('Invalid data type for bet');
-                    }
+                foreach ($betBatch as $key => $transaction) {
+    $requestTransaction = new \App\Services\Slot\Dto\RequestTransaction(
+        $transaction['user_id'],           // Ensure user_id is provided
+        $transaction['Status'],
+        $transaction['ProductID'],
+        $transaction['GameType'],
+        $transaction['TransactionID'],
+        $transaction['WagerID'],
+        $transaction['BetAmount'],
+        $transaction['TransactionAmount'],
+        $transaction['PayoutAmount'],
+        $transaction['ValidBetAmount'],
+        $transaction['Rate'],
+        $transaction['ActualGameTypeID'],
+        $transaction['ActualProductID']
+    );
 
-                    // Check if wager already exists
-                    $existingWager = Wager::where('seamless_wager_id', $bet->WagerID)->lockForUpdate()->first();
+    $this->requestTransactions[] = $requestTransaction;
+}
 
-                    if (!$existingWager) {
-                        // Collect wager data for batch insert
-                        $wagerData[] = [
-                            'user_id' => $bet->user_id,  // user_id is now part of RequestTransaction
-                            'seamless_wager_id' => $bet->WagerID,
-                            'status' => $bet->TransactionAmount > 0 ? WagerStatus::Win : WagerStatus::Lose,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    }
-
-                    // Retrieve game type, product, and rate
-                    $gameType = GameType::where('code', $bet->GameType)->firstOrFail();
-                    $product = Product::where('code', $bet->ProductID)->firstOrFail();
-                    $rate = GameTypeProduct::where('game_type_id', $gameType->id)
-                        ->where('product_id', $product->id)
-                        ->firstOrFail()->rate;
-
-                    // Collect seamless transaction data for batch insert
-                    $seamlessTransactionsData[] = [
-                        'user_id' => $bet->user_id,  // Use user_id from the bet object
-                        'wager_id' => $existingWager ? $existingWager->id : null, // link to existing or newly created wager
-                        'game_type_id' => $gameType->id,
-                        'product_id' => $product->id,
-                        'seamless_transaction_id' => $bet->TransactionID,
-                        'rate' => $rate,
-                        'transaction_amount' => $bet->TransactionAmount,
-                        'bet_amount' => $bet->BetAmount,
-                        'valid_amount' => $bet->ValidBetAmount,
-                        'status' => $bet->Status,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-                }
 
                 // Perform batch inserts
                 if (!empty($wagerData)) {
