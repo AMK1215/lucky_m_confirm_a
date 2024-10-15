@@ -28,6 +28,7 @@ class VersionNewPlaceBetController extends Controller
             ], 409); // 409 Conflict
         }
 
+        // Validate the structure of the request
         $validator = $request->check();
 
         if ($validator->fails()) {
@@ -37,6 +38,18 @@ class VersionNewPlaceBetController extends Controller
             return $validator->getResponse();
         }
 
+        // Retrieve transactions from the request
+        $transactions = $validator->getRequestTransactions();
+
+        // Check if the transactions are in the expected format
+        if (!is_array($transactions) || empty($transactions)) {
+            Redis::del("wallet:lock:$userId");
+
+            return response()->json([
+                'message' => 'Invalid transaction data format.',
+            ], 400);  // 400 Bad Request
+        }
+
         $before_balance = $request->getMember()->balanceFloat;
 
         DB::beginTransaction();
@@ -44,11 +57,8 @@ class VersionNewPlaceBetController extends Controller
             // Create and store the event in the database
             $event = $this->createEvent($request);
 
-            // Retrieve bets from the request
-            $bets = $validator->getRequestTransactions();
-
             // Insert bets using chunking for better performance
-            $message = $this->insertBets($bets, $event);  // Insert bets in chunks
+            $message = $this->insertBets($transactions, $event);  // Insert bets in chunks
 
             // Refresh balance after transactions
             $request->getMember()->wallet->refreshBalance();
