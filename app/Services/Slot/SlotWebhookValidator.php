@@ -162,17 +162,17 @@ class SlotWebhookValidator
         $product_codes_array = array_column($transactions, 'ProductID');
         $product_id_array = Product::whereIn('code', $product_codes_array)->pluck('id')->toArray();
         // if id arrays length are not equal to transactions length, then throw exception
-        if (count($game_type_ids_array) != count($transactions) || count($product_id_array) != count($transactions)) {
-            throw new Exception('Product or GameType not found.');
-        }
+        // if (count($game_type_ids_array) != count($transactions) || count($product_id_array) != count($transactions)) {
+        //     throw new Exception('Product or GameType not found.');
+        // }
 
         foreach ($transactions as $key => $transaction) {
             $game_type_product = GameTypeProduct::where('game_type_id', $game_type_ids_array[$key])
                 ->where('product_id', $product_id_array[$key])
                 ->first();
-            if (! $game_type_product) {
-                throw new Exception('Product or GameType not found for {'.$transaction['ProductID'].' '.$transaction['GameType'].'}');
-            }
+            // if (! $game_type_product) {
+            //     throw new Exception('Product or GameType not found for {'.$transaction['ProductID'].' '.$transaction['GameType'].'}');
+            // }
             $transaction['Rate'] = $game_type_product->rate;
             $transaction['ActualGameTypeID'] = $game_type_ids_array[$key];
             $transaction['ActualProductID'] = $product_id_array[$key];
