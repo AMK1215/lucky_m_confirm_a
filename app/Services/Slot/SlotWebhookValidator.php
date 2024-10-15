@@ -173,7 +173,9 @@ class SlotWebhookValidator
             // if (! $game_type_product) {
             //     throw new Exception('Product or GameType not found for {'.$transaction['ProductID'].' '.$transaction['GameType'].'}');
             // }
-            $transaction['Rate'] = $game_type_product->rate;
+            //$transaction['Rate'] = $game_type_product->rate;
+            $transaction['Rate'] = 1.0000;
+
             $transaction['ActualGameTypeID'] = $game_type_ids_array[$key];
             $transaction['ActualProductID'] = $product_id_array[$key];
 
