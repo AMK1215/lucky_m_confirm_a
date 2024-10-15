@@ -26,6 +26,24 @@ class GameTypeProductTableSeeder extends Seeder
                 'image' => 'pragmatic_casino.png',
                 'rate' => '1.0000',
             ],
+             [
+                'product_id' => 1,
+                'game_type_id' => 4,
+                'image' => 'pragmatic_casino.png',
+                'rate' => '1.0000',
+            ],
+            [
+                'product_id' => 1,
+                'game_type_id' => 6,
+                'image' => 'pragmatic_casino.png',
+                'rate' => '1.0000',
+            ],
+            [
+                'product_id' => 1,
+                'game_type_id' => 7,
+                'image' => 'pragmatic_casino.png',
+                'rate' => '1.0000',
+            ],
             [
                 'product_id' => 2,
                 'game_type_id' => 3,
