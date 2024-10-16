@@ -21,7 +21,7 @@ class VersionNewPlaceBetController extends Controller
         $userId = $request->getMember()->id;
 
         // Try to acquire a Redis lock for the user's wallet
-        $lock = Redis::set("wallet:lock:$userId", true, 'EX', 10, 'NX'); // 10 seconds lock
+        $lock = Redis::set("wallet:lock:$userId", true, 'EX', 30, 'NX'); // 10 seconds lock
         if (! $lock) {
             return response()->json([
                 'message' => 'The wallet is currently being updated. Please try again later.',
