@@ -16,15 +16,28 @@ use Illuminate\Support\Facades\Redis;
 class VersionNewPlaceBetController extends Controller
 {
     use OptimizedBettingProcess;
-   public function placeBetNew(SlotWebhookRequest $request)
+     public function placeBetNew(SlotWebhookRequest $request)
     {
         $userId = $request->getMember()->id;
 
-        // Try to acquire a Redis lock for the user's wallet
-        $lock = Redis::set("wallet:lock:$userId", true, 'EX', 30, 'NX'); // 10 seconds lock
+        // Retry logic for acquiring the Redis lock
+        $attempts = 0;
+        $maxAttempts = 3;
+        $lock = false;
+
+        while ($attempts < $maxAttempts && ! $lock) {
+            $lock = Redis::set("wallet:lock:$userId", true, 'EX', 10, 'NX'); // 10 seconds lock
+            $attempts++;
+
+            if (! $lock) {
+                sleep(1); // Wait for 1 second before retrying
+            }
+        }
+
         if (! $lock) {
             return response()->json([
-                'message' => 'The wallet is currently being updated. Please try again later.',
+                'message' => 'Another transaction is currently processing. Please try again later.',
+                'userId' => $userId
             ], 409); // 409 Conflict
         }
 
@@ -33,7 +46,7 @@ class VersionNewPlaceBetController extends Controller
 
         if ($validator->fails()) {
             // Release Redis lock and return validation error response
-            Redis::del("wallet:lock::$userId");
+            Redis::del("wallet:lock:$userId");
 
             return $validator->getResponse();
         }
@@ -46,7 +59,7 @@ class VersionNewPlaceBetController extends Controller
 
         // Check if the transactions are in the expected format
         if (!is_array($transactions) || empty($transactions)) {
-            Redis::del("wallet:lock::$userId");
+            Redis::del("wallet:lock:$userId");
 
             return response()->json([
                 'message' => 'Invalid transaction data format.',
@@ -70,7 +83,7 @@ class VersionNewPlaceBetController extends Controller
 
             DB::commit();
 
-            Redis::del("wallet:lock::$userId");
+            Redis::del("wallet:lock:$userId");
 
             // Return success response
             return SlotWebhookService::buildResponse(
@@ -80,7 +93,7 @@ class VersionNewPlaceBetController extends Controller
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            Redis::del("wallet:lock::$userId");
+            Redis::del("wallet:lock:$userId");
             Log::error('Error during placeBet', ['error' => $e]);
 
             return response()->json([
@@ -88,6 +101,78 @@ class VersionNewPlaceBetController extends Controller
             ], 500);
         }
     }
+//    public function placeBetNew(SlotWebhookRequest $request)
+//     {
+//         $userId = $request->getMember()->id;
+
+//         // Try to acquire a Redis lock for the user's wallet
+//         $lock = Redis::set("wallet:lock:$userId", true, 'EX', 30, 'NX'); // 10 seconds lock
+//         if (! $lock) {
+//             return response()->json([
+//                 'message' => 'The wallet is currently being updated. Please try again later.',
+//             ], 409); // 409 Conflict
+//         }
+
+//         // Validate the structure of the request
+//         $validator = $request->check();
+
+//         if ($validator->fails()) {
+//             // Release Redis lock and return validation error response
+//             Redis::del("wallet:lock::$userId");
+
+//             return $validator->getResponse();
+//         }
+
+//         // Retrieve transactions from the request
+//         $transactions = $validator->getRequestTransactions();
+
+//         // Debugging: Log the transactions to check the structure
+//         Log::info('Transactions received:', ['transactions' => $transactions]);
+
+//         // Check if the transactions are in the expected format
+//         if (!is_array($transactions) || empty($transactions)) {
+//             Redis::del("wallet:lock::$userId");
+
+//             return response()->json([
+//                 'message' => 'Invalid transaction data format.',
+//                 'details' => $transactions,  // Provide details about the received data for debugging
+//             ], 400);  // 400 Bad Request
+//         }
+
+//         $before_balance = $request->getMember()->balanceFloat;
+
+//         DB::beginTransaction();
+//         try {
+//             // Create and store the event in the database
+//             $event = $this->createEvent($request);
+
+//             // Insert bets using chunking for better performance
+//             $message = $this->insertBets($transactions, $event);  // Insert bets in chunks
+
+//             // Refresh balance after transactions
+//             $request->getMember()->wallet->refreshBalance();
+//             $after_balance = $request->getMember()->balanceFloat;
+
+//             DB::commit();
+
+//             Redis::del("wallet:lock::$userId");
+
+//             // Return success response
+//             return SlotWebhookService::buildResponse(
+//                 SlotWebhookResponseCode::Success,
+//                 $after_balance,
+//                 $before_balance
+//             );
+//         } catch (\Exception $e) {
+//             DB::rollBack();
+//             Redis::del("wallet:lock::$userId");
+//             Log::error('Error during placeBet', ['error' => $e]);
+
+//             return response()->json([
+//                 'message' => $e->getMessage(),
+//             ], 500);
+//         }
+//     }
 
     // public function placeBetNew(SlotWebhookRequest $request)
     // {
