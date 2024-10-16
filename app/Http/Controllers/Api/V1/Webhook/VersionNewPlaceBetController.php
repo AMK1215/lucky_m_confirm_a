@@ -26,7 +26,7 @@ class VersionNewPlaceBetController extends Controller
         $lock = false;
 
         while ($attempts < $maxAttempts && ! $lock) {
-            $lock = Redis::set("wallet:lock:$userId", true, 'EX', 10, 'NX'); // 10 seconds lock
+            $lock = Redis::set("wallet:lock:$userId", true, 'EX', 15, 'NX'); // 10 seconds lock
             $attempts++;
 
             if (! $lock) {
@@ -55,7 +55,7 @@ class VersionNewPlaceBetController extends Controller
         $transactions = $validator->getRequestTransactions();
 
         // Debugging: Log the transactions to check the structure
-        Log::info('Transactions received:', ['transactions' => $transactions]);
+        //Log::info('Transactions received:', ['transactions' => $transactions]);
 
         // Check if the transactions are in the expected format
         if (!is_array($transactions) || empty($transactions)) {
