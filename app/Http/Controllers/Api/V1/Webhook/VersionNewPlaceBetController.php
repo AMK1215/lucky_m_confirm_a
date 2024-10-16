@@ -169,19 +169,19 @@ class VersionNewPlaceBetController extends Controller
                 $toUser = User::adminUser();  // Admin or central system wallet
 
                 $meta = [
-                    'wager_id' => $transaction['WagerID'],
+                    'wager_id' => $transaction->WagerID,               // Use object property access
                     'event_id' => $request->getMessageID(),
-                    'seamless_transaction_id' => $transaction['TransactionID'],
+                    'seamless_transaction_id' => $transaction->TransactionID,  // Use object property access
                 ];
 
                 // Call processTransfer for each transaction
                 $this->processTransfer(
-                    $fromUser,                      // From user
-                    $toUser,                        // To user (admin/system wallet)
-                    TransactionName::Stake,         // Transaction name (e.g., Stake)
-                    $transaction['TransactionAmount'],  // Transaction amount
-                    $transaction['Rate'],           // Rate (multiplier, etc.)
-                    $meta                           // Meta data (wager id, event id, etc.)
+                    $fromUser,                        // From user
+                    $toUser,                          // To user (admin/system wallet)
+                    TransactionName::Stake,           // Transaction name (e.g., Stake)
+                    $transaction->TransactionAmount,  // Use object property access for TransactionAmount
+                    $transaction->Rate,               // Use object property access for Rate
+                    $meta                             // Meta data (wager id, event id, etc.)
                 );
             }
 
