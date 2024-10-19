@@ -31,11 +31,14 @@ use App\Http\Controllers\Api\V1\Webhook\RollbackController;
 use App\Http\Controllers\Api\V1\Webhook\VersionNewPlaceBetController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\Webhook\TestingController;
 
 //login route post
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/player-change-password', [AuthController::class, 'playerChangePassword']);
+Route::post('Seamless/Test', [TestingController::class, 'AppGetGameList']);
+
 
 // logout
 
