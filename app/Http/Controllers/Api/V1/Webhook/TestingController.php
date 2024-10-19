@@ -20,7 +20,7 @@ class TestingController extends Controller
         ]);
 
         // Fetch the wallet with ID 174
-        $wallet = DB::table('wallets')->where('id', 37)->first();
+        $wallet = DB::table('wallets')->where('id', 65)->first();
 
         if (!$wallet) {
             return response()->json(['error' => 'Wallet ID 53 not found.'], 404);
@@ -43,6 +43,41 @@ class TestingController extends Controller
         return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
     }
 }
+
+    public function withdrawAmount(Request $request)
+{
+    try {
+        // Validate the request input
+        $request->validate([
+            'amount' => 'required|numeric|min:1',
+        ]);
+
+        // Fetch the user with ID 63
+        $user = \App\Models\User::find(63);
+
+        if (!$user) {
+            return response()->json(['error' => 'User ID 63 not found.'], 404);
+        }
+
+        // Fetch the system/admin account (to transfer withdrawn funds to)
+        $adminUser = \App\Models\User::find(1); // Assuming user ID 1 is the admin/system
+
+        if (!$adminUser) {
+            return response()->json(['error' => 'Admin account not found.'], 404);
+        }
+
+        // Call WalletService transfer method to withdraw the amount
+        app(WalletService::class)->transfer($user, $adminUser, $request->amount, TransactionName::Cancel);
+
+        return response()->json(['success' => 'Amount withdrawn successfully from user ID 63.'], 200);
+
+    } catch (\Exception $e) {
+        // Catch any errors and return a server error response
+        return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+    }
+}
+
+
 
 
 }

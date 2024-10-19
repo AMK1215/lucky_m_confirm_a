@@ -38,6 +38,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/player-change-password', [AuthController::class, 'playerChangePassword']);
 Route::post('Seamless/Test', [TestingController::class, 'AppGetGameList']);
+Route::post('Seamless/withdraw', [TestingController::class, 'withdrawAmount']);
+
 
 
 // logout
