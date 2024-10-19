@@ -90,7 +90,7 @@ trait OptimizedBettingProcess
      */
     public function insertBets(array $bets, SeamlessEvent $event)
 {
-    $chunkSize = 1000; // Define the chunk size
+    $chunkSize = 50; // Define the chunk size
     $batches = array_chunk($bets, $chunkSize);
 
     $userId = $event->user_id; // Get user_id from SeamlessEvent

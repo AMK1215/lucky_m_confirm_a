@@ -2,10 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Admin\GameList;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
+use App\Models\Admin\GameList;
+
 
 class Live22SMTablesSeeder extends Seeder
 {

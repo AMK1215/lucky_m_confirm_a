@@ -21,16 +21,28 @@ sudo chmod -R 775 /var/www/html/bossi_a/storage/logs/
 sudo chown -R www-data:www-data /var/www/html/bossi_a/storage/logs
 
 
-bossi ပြင်ရန် lists
+SET GLOBAL innodb_print_all_deadlocks = 1;
 
-1.Deposit Requested Lists တွင်  All,Approved,Pending,Rejected fiterထည်ံရန်။Created at တွင် date အပြင် Time ပါ ပါရန်။ နောက်ဆုံးrequest ဝင်လာတဲ့ဟာက အပေါ်ဆုံးမှာဖစ်နေရန်။ အဲ့ pageတွင်ဘဲ refresh buttonကိုထည့်ပေးရန်။
-2.Deposit Requested Lists Detailတွင် image ကို ဘယ်ဘက်မှာထားရန်။informationတွေကိုညာဘက်မှာထားရန် အဲ့ဘက်တွင်ဘဲ transaction idနောက်ဆုံး6လုံးနဲ့ date timeကိုပါထည့်ပေးရန်။ accept / reject button များကိုပါတစ်ခါတည်းထည့်ပေးရန်။
-3.Withdraw Requested Lists တွင်  All,Approved,Pending,Rejected fiterထည်ံရန်။Created at တွင် date အပြင် Time ပါ ပါရန်။ နောက်ဆုံးrequest ဝင်လာတဲ့ဟာက အပေါ်ဆုံးမှာဖစ်နေရန်။ အဲ့ pageတွင်ဘဲ refresh buttonကိုထည့်ပေးရန်။
-4.Dashboardတစ်ခုလုံးကို light version ပြောင်းရန်။
-5.balance တွေအကုန်လုံးကို 0သုံလုံးတစ်ဖြတ် "," ဖြတ်ပေးပါ။
-6.siteတစ်ခုလုံးရှိ  Deposit / Withdraw balance များကို Depositဆို အစိမ်းရောင် withdraw ဆိုအနီရောင်ဖြင့်ပြပေးရန်။
-7.balance ကို  header တွင်ထပ်ထည့်ရန်။ ဘယ် pageရောက်ရောက်headerတွင်balanceကိုကြည့်လိုရရန်။
-8.agentများရဲ့ ReferralCode ကို admin ကိုယ်တိုင်သတ်မှတ်ပေးလိုရရန်။
+SHOW VARIABLES LIKE 'transaction_isolation';
+SET GLOBAL innodb_lock_wait_timeout = 100;
+------------
+cd /etc/mysql/my.cnf
+[mysqld]
+transaction-isolation = READ-COMMITTED
+---------------
+SELECT INDEX_NAME, LOCK_TYPE, LOCK_DATA, LOCK_MODE, LOCK_STATUS, EVENT_ID
+FROM performance_schema.data_locks;
+
+SELECT * FROM performance_schema.setup_instruments WHERE NAME LIKE '%data_lock%' AND ENABLED = 'YES';
+
+UPDATE performance_schema.setup_instruments
+SET ENABLED = 'YES'
+WHERE NAME LIKE '%data_lock%';
+SET GLOBAL innodb_status_output=ON;
+SET GLOBAL innodb_status_output_locks=ON;
+
+
+
 # Set the ownership of the entire project directory to www-data user and group
 chown -R www-data:www-data /var/www/html/bossi_a
 
@@ -255,3 +267,59 @@ sudo systemctl status redis-server
 //         }
 //     } while ($retryCount < $maxRetries);
 // }
+
+--------------
+public function createWagerTransactions(array $betBatch, SeamlessEvent $event)
+{
+    $retryCount = 0;
+    $maxRetries = 5; // Number of retries before failing
+    $backoffTime = 1; // Start with 1 second delay
+
+    do {
+        try {
+            DB::transaction(function () use ($betBatch, $event) {
+                // Process wager and transaction logic here
+            });
+
+            break; // Exit retry loop if successful
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '40001') { // Deadlock error code
+                $retryCount++;
+                if ($retryCount >= $maxRetries) {
+                    throw $e; // If max retries reached, throw the error
+                }
+                sleep($backoffTime); // Wait for a backoff time before retrying
+                $backoffTime *= 2; // Exponential backoff (increase wait time)
+            } else {
+                throw $e; // If not a deadlock error, throw it immediately
+            }
+        }
+    } while ($retryCount < $maxRetries);
+}
+
+public function processTransfer(User $from, User $to, TransactionName $transactionName, float $amount, int $rate, array $meta)
+{
+    DB::transaction(function () use ($from, $to, $amount, $transactionName, $meta) {
+        // Fetch the wallet and lock it for update
+        $wallet = $from->wallet()->lockForUpdate()->firstOrFail();
+
+        // Ensure version matches for optimistic locking
+        if ($wallet->version !== $from->wallet->version) {
+            throw new \Exception('Version mismatch detected.');
+        }
+
+        // Update wallet balance
+        $wallet->balance -= $amount;
+
+        // Increment the version
+        $wallet->version += 1;
+
+        // Save the wallet
+        $wallet->save();
+
+        // Perform the transfer
+        app(WalletService::class)->transfer($from, $to, abs($amount), $transactionName, $meta);
+    });
+}
+---------------
