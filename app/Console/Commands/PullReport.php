@@ -65,7 +65,7 @@ class PullReport extends Command
             'Sign' => $signature,
             'RequestTime' => $requestTime,
         ];
-        //Log::info($data);
+        Log::info($data);
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
