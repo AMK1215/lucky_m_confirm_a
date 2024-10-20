@@ -65,7 +65,7 @@ class PullReport extends Command
             'Sign' => $signature,
             'RequestTime' => $requestTime,
         ];
-        Log::info($data);
+        //Log::info($data);
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
@@ -75,7 +75,7 @@ class PullReport extends Command
             $data = $response->json();
             if ($data['Wagers'] != null) {
                 $data = $response['Wagers'];
-                //Log::info($response);
+                Log::info($response);
                 // $user = Auth::user(); // Get the authenticated user
                 foreach ($data as $report) {
                     $agent_commission = null; // Default value in case agent is not found
