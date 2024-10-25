@@ -9,12 +9,25 @@ crontab -e
 
 * * * * * cd /var/www/lucky_m_confirm_a && php artisan schedule:run >> /dev/null 2>&1
 
+tail -f /var/log/mysql/error.log
+
+sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
 
 php artisan make:migration add_agent_link_to_users_table --table=users
 
 // to add column
 ALTER TABLE transactions
 ADD COLUMN agent_id INT(11) AFTER name;
+
+
+SHOW PROCESSLIST;
+
+
+SHOW INDEX FROM reports;
+SHOW INDEX FROM seamless_transactions;
+CREATE INDEX idx_wager_id ON reports (wager_id);
+CREATE INDEX idx_seamless_transaction_id ON seamless_transactions (seamless_transaction_id);
+EXPLAIN SELECT * FROM reports WHERE wager_id = 2462359211;
 
 
 sudo chmod -R 775 /var/www/html/bossi_a/storage/logs/
