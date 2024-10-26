@@ -1,0 +1,43 @@
+name: Deploy on AWS
+
+on:
+  push:
+    branches:
+    - main
+
+permissions:
+  contents: read
+
+jobs:
+
+  Deploy-production:
+    name: production deployment
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      uses: "php-actions/composer@v6"
+      env:
+        COMPOSER: "composer.json"
+      with:
+        php_version: "8.3"
+        version: "2.2"
+        args: "--no-interaction --no-scripts --prefer-dist --ignore-platform-reqs"
+        extensions: "mysql zip gd mbstring curl xml bcmath"
+
+    - name: Configure AWS CLI
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Push to S3 and create CodeDeploy deployment
+      run: |
+        aws deploy push --application-name ${{ vars.AWS_CODEDEPLOY_APP_PROD }} \
+          --s3-location s3://${{ vars.AWS_CODEDEPLOY_S3_BUCKET_PROD }}/packages/${{ github.sha }}.zip \
+          --ignore-hidden-files
+        aws deploy create-deployment --application-name ${{ vars.AWS_CODEDEPLOY_APP_PROD }} \
+          --s3-location bucket=${{ vars.AWS_CODEDEPLOY_S3_BUCKET_PROD }},key=packages/${{ github.sha }}.zip,bundleType=zip \
+          --deployment-group-name ${{ vars.AWS_CODEDEPLOY_GROUP_PROD }}
