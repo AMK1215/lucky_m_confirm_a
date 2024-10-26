@@ -131,7 +131,7 @@ class PullReport extends Command
                             'settlement_date' => $report['SettlementDate'] ?? now(),
                             //'agent_id' => $user->agent_id, // Store the agent_id
                             'agent_id' => null, // Store the agent_id
-                            'agent_commission' => null,
+                            // 'agent_commission' => ,
 
                             //'agent_commission' => $grossCommission,
                         ]);
@@ -155,7 +155,7 @@ class PullReport extends Command
                             //'settlement_date' => $report['SettlementDate'],
                             'settlement_date' => $report['SettlementDate'] ?? now(),
                             'agent_id' => null, // Store the agent_id
-                            'agent_commission' => null,
+                            // 'agent_commission' => null,
 
                         ]);
                     }
