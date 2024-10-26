@@ -38,7 +38,7 @@ class PlaceBetNewVersionController extends Controller
         if (! $lock) {
             return response()->json([
                 'message' => 'Another transaction is currently processing. Please try again later.',
-                'userId' => $userId
+                'userId' => $userId,
             ], 409); // 409 Conflict
         }
 
@@ -48,6 +48,7 @@ class PlaceBetNewVersionController extends Controller
         if ($validator->fails()) {
             // Release Redis lock and return validation error response
             Redis::del("wallet:lock:$userId");
+
             return $validator->getResponse();
         }
 
@@ -55,8 +56,9 @@ class PlaceBetNewVersionController extends Controller
         $transactions = $validator->getRequestTransactions();
 
         // Check if the transactions are in the expected format
-        if (!is_array($transactions) || empty($transactions)) {
+        if (! is_array($transactions) || empty($transactions)) {
             Redis::del("wallet:lock:$userId");
+
             return response()->json([
                 'message' => 'Invalid transaction data format.',
                 'details' => $transactions,  // Provide details about the received data for debugging
@@ -115,6 +117,7 @@ class PlaceBetNewVersionController extends Controller
         } catch (\Exception $e) {
             Log::error('Error during wallet transfer processing', ['error' => $e]);
             Redis::del("wallet:lock:$userId");
+
             return response()->json(['message' => $e->getMessage()], 500);
         }
 
