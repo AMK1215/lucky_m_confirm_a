@@ -11,6 +11,7 @@ permissions:
 jobs:
 
   Deploy-production:
+    runs-on: ubuntu-24.04
     name: production deployment
     steps:
     - name: Checkout Repository
