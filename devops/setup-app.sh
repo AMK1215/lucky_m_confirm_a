@@ -20,14 +20,14 @@ sudo chown -R ubuntu:ubuntu /var/www/app/storage
 # first execution will do anything. As long as we're using CodeDeploy's
 # OneAtATime configuration we can't have a race condition.
 # leave proof that migrations have been run
-sudo -Hu ubuntu php /var/www/app/artisan migrate --force && touch /tmp/migrations-done
+php /var/www/app/artisan migrate --force && touch /tmp/migrations-done
 # Run production optimizations.
 
-sudo -Hu ubuntu php /var/www/app/artisan optimize
-sudo -Hu ubuntu php /var/www/app/artisan event:cache
+sudo -Hu ubuntu php /var/www/app/artisan optimize && touch /tmp/optimizations-done
+sudo -Hu ubuntu php /var/www/app/artisan event:cache && touch /tmp/events-done
 
 # Fix permissions.
-touch -Hu ubuntu /var/www/app/storage/logs/laravel.log
+touch -Hu ubuntu /var/www/app/storage/logs/laravel.log && touch /tmp/logs-done
 sudo chmod -R 775 /var/www/app/storage/{app,framework,logs}
 sudo chmod -R 775 /var/www/app/bootstrap/cache
 sudo chown -R ubuntu:ubuntu /var/www/app/
