@@ -19,9 +19,10 @@ sudo chown -R ubuntu:ubuntu /var/www/app/storage
 # Run new migrations. While this is run on all instances, only the
 # first execution will do anything. As long as we're using CodeDeploy's
 # OneAtATime configuration we can't have a race condition.
-sudo -Hu ubuntu php /var/www/app/artisan migrate --force
-
+# leave proof that migrations have been run
+sudo -Hu ubuntu php /var/www/app/artisan migrate --force && touch /tmp/migrations-done
 # Run production optimizations.
+
 sudo -Hu ubuntu php /var/www/app/artisan optimize
 sudo -Hu ubuntu php /var/www/app/artisan event:cache
 

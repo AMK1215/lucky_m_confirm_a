@@ -22,6 +22,6 @@ sudo systemctl enable supervisor
 # there to avoid any deployment failures.
 rm -rf /var/www/app/
 mkdir /var/www/app/
-sudo chown www-data:www-data -R /var/www/app/
+sudo chown ubuntu:ubuntu -R /var/www/app/
 
 touch /tmp/deployment-cleared
