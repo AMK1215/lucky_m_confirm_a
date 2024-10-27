@@ -25,7 +25,7 @@ jobs:
         php_version: "8.3"
         version: "2.2"
         args: "--no-interaction --no-scripts --prefer-dist --ignore-platform-reqs"
-        extensions: "mysql zip gd mbstring curl xml bcmath"
+        php_extensions: "mysql zip gd mbstring curl xml bcmath"
 
     - name: Configure AWS CLI
       uses: aws-actions/configure-aws-credentials@v4
