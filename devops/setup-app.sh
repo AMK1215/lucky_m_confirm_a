@@ -24,8 +24,10 @@ sudo chown -R ubuntu:ubuntu /var/www/app/storage
 sudo -Hu ubuntu php /var/www/app/artisan migrate -v --force >/tmp/migration.log 2>&1 && touch /tmp/migrations-done
 # Run production optimizations.
 
-sudo -Hu ubuntu php /var/www/app/artisan optimize >/tmp/optimization.log 2>&1 && touch /tmp/optimization-done
-sudo -Hu ubuntu php /var/www/app/artisan event:cache >/tmp/event-cache.log 2>&1 && touch /tmp/event-cache-done
+# sudo -Hu ubuntu php /var/www/app/artisan optimize >/tmp/optimization.log 2>&1 && touch /tmp/optimization-done
+
+sudo -Hu ubuntu php /var/www/app/artisan optimize:clear >/tmp/optimization-clear.log 2>&1 && touch /tmp/optimization-clear-done
+# sudo -Hu ubuntu php /var/www/app/artisan event:cache >/tmp/event-cache.log 2>&1 && touch /tmp/event-cache-done
 
 # Fix permissions.
 touch /var/www/app/storage/logs/laravel.log >/tmp/laravel-log.log 2>&1 && touch /tmp/laravel-log-done
