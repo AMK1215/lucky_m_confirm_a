@@ -79,6 +79,7 @@ class PullReport extends Command
                 // $user = Auth::user(); // Get the authenticated user
                 foreach ($data as $report) {
                     $wagerId = Report::where('wager_id', $report['WagerID'])->first();
+                    $user = User::where('user_name', $report['MemberName'])->first();
 
                     if ($wagerId) {
                         $wagerId->update([
@@ -99,7 +100,7 @@ class PullReport extends Command
                             'modified_on' => $report['ModifiedOn'],
                             // 'settlement_date' => $report['SettlementDate'],
                             'settlement_date' => $report['SettlementDate'] ?? now(),
-                            //'agent_id' => $user->agent_id, // Store the agent_id
+                            'agent_id' => $user->agent_id, // Store the agent_id
                             'agent_id' => null, // Store the agent_id
                             // 'agent_commission' => ,
 
@@ -124,7 +125,7 @@ class PullReport extends Command
                             'modified_on' => $report['ModifiedOn'],
                             //'settlement_date' => $report['SettlementDate'],
                             'settlement_date' => $report['SettlementDate'] ?? now(),
-                            'agent_id' => null, // Store the agent_id
+                            'agent_id' => $user->agent_id, // Store the agent_id
                             // 'agent_commission' => null,
 
                         ]);

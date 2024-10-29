@@ -49,12 +49,14 @@ class ReportController extends Controller
             $query = DB::table('reports')
                 ->join('users', 'reports.member_name', '=', 'users.user_name')
                 ->join('products', 'products.code', '=', 'reports.product_code')
+                ->join('game_lists', 'game_lists.code', '=', 'reports.game_name')
                 ->where('reports.member_name', $userName)
                 ->orderBy('reports.id', 'desc')
                 ->select(
                     'reports.*',
                     'users.name as name',
                     'products.name as product_name',
+                    'game_lists.name as game_list_name',
                     DB::raw('(reports.payout_amount - reports.valid_bet_amount) as win_or_lose')
                 );
             $report = $query->get();

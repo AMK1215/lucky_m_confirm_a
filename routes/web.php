@@ -19,14 +19,3 @@ Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('get-change-password', [LoginController::class, 'changePassword'])->name('getChangePassword');
 Route::post('update-password/{user}', [LoginController::class, 'updatePassword'])->name('updatePassword');
-
-Route::get('/test-redis', function () {
-    // Store a value in Redis for 10 minutes (600 seconds)
-    Cache::store('redis')->put('key', 'value', 600);
-
-    // Retrieve the stored value
-    $value = Cache::store('redis')->get('key');
-
-    // Dump and die (dd) to output the value
-    dd($value); // Should output: "value"
-});
