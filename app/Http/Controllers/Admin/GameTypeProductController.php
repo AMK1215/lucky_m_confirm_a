@@ -36,7 +36,7 @@ class GameTypeProductController extends Controller
         $path = $request->file('image')->store('images', 's3');
 
         DB::table('game_type_product')->where('game_type_id', $gameTypeId)->where('product_id', $productId)
-            ->update(['image' => Storage::disk('s3')->url($path)]);
+            ->update(['image' => Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10))]);
 
         return redirect()->route('admin.gametypes.index');
     }
