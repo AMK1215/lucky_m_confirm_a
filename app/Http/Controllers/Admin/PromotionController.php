@@ -39,7 +39,7 @@ class PromotionController extends Controller
         $path = $request->file('image')->store('images', 's3');
 
         Promotion::create([
-            'image' => Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10))
+            'image' => Storage::disk('s3')->url($path)
         ]);
 
         return redirect()->route('admin.promotions.index')->with('success', 'New Promotion Created Successfully.');
@@ -68,8 +68,9 @@ class PromotionController extends Controller
     {
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('images', 's3');
+
             $promotion->update([
-                'image' => Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10))
+                'image' => Storage::disk('s3')->url($path)
             ]);
 
             return redirect()->route('admin.promotions.index')->with('success', 'Promotion Updated');

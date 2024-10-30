@@ -101,7 +101,7 @@ class AgentController extends Controller
             'password' => Hash::make($inputs['password']),
             'agent_id' => Auth::id(),
             'type' => UserType::Agent,
-            'agent_logo' => Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10)),
+            'agent_logo' => Storage::disk('s3')->url($path),
             'referral_code' => $request->referral_code,
             'line_id' => $request->line_id,
             'payment_type_id' => $request->payment_type_id,
@@ -175,7 +175,7 @@ class AgentController extends Controller
         if ($request->file('agent_logo')) {
             $path = $request->file('agent_logo')->store('images', 's3');
 
-            $param['agent_logo'] = Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10));
+            $param['agent_logo'] = Storage::disk('s3')->url($path);
         }
 
         $user->update($param);

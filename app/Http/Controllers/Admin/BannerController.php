@@ -40,7 +40,7 @@ class BannerController extends Controller
         $path = $request->file('image')->store('images', 's3');
 
         Banner::create([
-            'image' => Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10)),
+            'image' => Storage::disk('s3')->url($path),
         ]);
 
         return redirect(route('admin.banners.index'))->with('success', 'New Banner Image Added.');
@@ -76,7 +76,7 @@ class BannerController extends Controller
         $path = $request->file('image')->store('images', 's3');
 
         $banner->update([
-            'image' => Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10)),
+            'image' => Storage::disk('s3')->url($path),
         ]);
 
         return redirect(route('admin.banners.index'))->with('success', 'Banner Image Updated.');
