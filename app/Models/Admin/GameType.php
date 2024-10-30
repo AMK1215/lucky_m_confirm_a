@@ -22,4 +22,9 @@ class GameType extends Model
     {
         return $this->products->pluck('pivot.image');
     }
+
+    public function getImgUrlAttribute()
+    {
+        return  $this->img_url;
+    }
 }
