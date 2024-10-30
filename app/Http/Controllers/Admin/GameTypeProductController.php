@@ -30,7 +30,7 @@ class GameTypeProductController extends Controller
     }
 
     public function update(Request $request, $gameTypeId, $productId)
-    {
+    {            
         $image = $request->file('image');
             
         $path = $request->file('image')->store('images', 's3');
