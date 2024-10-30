@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Yajra\DataTables\Contracts\DataTable;
@@ -90,11 +91,7 @@ class AgentController extends Controller
         $transfer_amount = $inputs['amount'];
 
         if ($request->hasFile('agent_logo')) {
-            $image = $request->file('agent_logo');
-            $ext = $image->getClientOriginalExtension();
-            $filename = uniqid('logo_').'.'.$ext;
-            $image->move(public_path('assets/img/sitelogo/'), $filename);
-            $request->agent_logo = $filename;
+            $path = $request->file('agent_logo')->store('images', 's3');
         }
 
         $agent = User::create([
@@ -104,7 +101,7 @@ class AgentController extends Controller
             'password' => Hash::make($inputs['password']),
             'agent_id' => Auth::id(),
             'type' => UserType::Agent,
-            'agent_logo' => $request->agent_logo,
+            'agent_logo' => Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10)),
             'referral_code' => $request->referral_code,
             'line_id' => $request->line_id,
             'payment_type_id' => $request->payment_type_id,
@@ -176,12 +173,9 @@ class AgentController extends Controller
 
         $user = User::find($id);
         if ($request->file('agent_logo')) {
-            File::delete(public_path('assets/img/sitelogo/'.$user->agent_logo));
-            $image = $request->file('agent_logo');
-            $ext = $image->getClientOriginalExtension();
-            $filename = uniqid('agent_logo').'.'.$ext;
-            $image->move(public_path('assets/img/sitelogo/'), $filename);
-            $param['agent_logo'] = $filename;
+            $path = $request->file('agent_logo')->store('images', 's3');
+
+            $param['agent_logo'] = Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10));
         }
 
         $user->update($param);

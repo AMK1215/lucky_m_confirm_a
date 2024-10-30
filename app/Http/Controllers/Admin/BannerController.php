@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin\Banner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
 {
@@ -36,12 +37,10 @@ class BannerController extends Controller
             'image' => 'required',
         ]);
         // image
-        $image = $request->file('image');
-        $ext = $image->getClientOriginalExtension();
-        $filename = uniqid('banner').'.'.$ext; // Generate a unique filename
-        $image->move(public_path('assets/img/banners/'), $filename); // Save the file
+        $path = $request->file('image')->store('images', 's3');
+
         Banner::create([
-            'image' => $filename,
+            'image' => Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10)),
         ]);
 
         return redirect(route('admin.banners.index'))->with('success', 'New Banner Image Added.');
@@ -74,17 +73,10 @@ class BannerController extends Controller
         $request->validate([
             'image' => 'required',
         ]);
-        //remove banner from localstorage
-        File::delete(public_path('assets/img/banners/'.$banner->image));
-
-        // image
-        $image = $request->file('image');
-        $ext = $image->getClientOriginalExtension();
-        $filename = uniqid('banner').'.'.$ext; // Generate a unique filename
-        $image->move(public_path('assets/img/banners/'), $filename); // Save the file
+        $path = $request->file('image')->store('images', 's3');
 
         $banner->update([
-            'image' => $filename,
+            'image' => Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(10)),
         ]);
 
         return redirect(route('admin.banners.index'))->with('success', 'Banner Image Updated.');
@@ -98,8 +90,7 @@ class BannerController extends Controller
         if (! $banner) {
             return redirect()->back()->with('error', 'Banner Not Found');
         }
-        //remove banner from localstorage
-        File::delete(public_path('assets/img/banners/'.$banner->image));
+
         $banner->delete();
 
         return redirect()->back()->with('success', 'Banner Deleted.');

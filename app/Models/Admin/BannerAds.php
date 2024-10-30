@@ -13,12 +13,6 @@ class BannerAds extends Model
         'image',
     ];
 
-    protected $appends = ['img_url'];
-
     protected $table = 'banner_ads';
 
-    public function getImgUrlAttribute()
-    {
-        return asset('assets/img/banners_ads/'.$this->image);
-    }
 }
