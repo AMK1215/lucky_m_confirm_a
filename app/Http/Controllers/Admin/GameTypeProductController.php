@@ -31,8 +31,6 @@ class GameTypeProductController extends Controller
 
     public function update(Request $request, $gameTypeId, $productId)
     {            
-        $image = $request->file('image');
-            
         $path = $request->file('image')->store('images', 's3');
 
         DB::table('game_type_product')->where('game_type_id', $gameTypeId)->where('product_id', $productId)
