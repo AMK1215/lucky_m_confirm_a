@@ -41,16 +41,4 @@ class TransferLogController extends Controller
         return view('admin.trans_log.detail', compact('transferLogs'));
     }
 
-    public function gameTransferlog($id)
-    {
-        $transferLogs = Auth::user()->transactions()
-        ->with('targetUser')
-        ->whereNotIn('type', ['withdraw', 'deposit'])
-        ->whereNotIn('name', ['credit_transfer', 'debit_transfer'])
-        ->where('target_user_id', $id)
-        ->latest()
-        ->get();
-
-        return view('admin.trans_log.game_transfer_log', compact('transferLogs'));
-    }
 }
