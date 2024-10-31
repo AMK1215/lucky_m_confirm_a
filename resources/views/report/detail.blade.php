@@ -8,7 +8,7 @@
  <script src="{{asset('admin_app/assets/js/jquery.min.js')}}"></script>
 <script src="{{asset('admin_app/assets/js/jquery.datatable.min.js')}}"></script>
 <script
-    src="{{asset('admin_app/assets/js/dataTables.bootstrap.min.js')}}/"></script>
+    src="{{asset('admin_app/assets/js/dataTables.bootstrap.min.js')}}"></script>
 <link rel="stylesheet"
     href="{{asset('admin_app/assets/css/bootstrap.min.css')}}">
 <link rel="stylesheet"
