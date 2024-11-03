@@ -48,7 +48,7 @@
             <tr>
               <td class="text-sm font-weight-normal">{{ ++$key }}</td>
               <td>
-                <img width="100px" class="img-thumbnail" src="{{ $banner->img_url }}" alt="">
+                <img width="100px" class="img-thumbnail" src="{{ $banner->image }}" alt="">
               </td>
               <td class="text-sm font-weight-normal">{{ $banner->created_at->format('F j, Y') }}</td>
               <td class="text-sm font-weight-normal">{{ $banner->updated_at->format('F j, Y') }}</td>

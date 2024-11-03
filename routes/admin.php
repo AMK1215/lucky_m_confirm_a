@@ -124,7 +124,6 @@ Route::group([
 
     Route::get('transer-log', [TransferLogController::class, 'index'])->name('transferLog');
     Route::get('transferlog/{id}', [TransferLogController::class, 'transferLog'])->name('transferLogDetail');
-
     // Route::get('slot-win-lose', [GSCReportController::class, 'index'])->name('GscReport.index');
     // web.php
 

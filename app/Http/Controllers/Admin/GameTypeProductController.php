@@ -7,6 +7,7 @@ use App\Models\Admin\GameType;
 use App\Models\Admin\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class GameTypeProductController extends Controller
 {
@@ -29,14 +30,11 @@ class GameTypeProductController extends Controller
     }
 
     public function update(Request $request, $gameTypeId, $productId)
-    {
-        $image = $request->file('image');
-        $ext = $image->getClientOriginalExtension();
-        $filename = uniqid('game_type').'.'.$ext;
-        $image->move(public_path('assets/img/game_logo/'), $filename);
+    {            
+        $path = $request->file('image')->store('images', 's3');
 
         DB::table('game_type_product')->where('game_type_id', $gameTypeId)->where('product_id', $productId)
-            ->update(['image' => $filename]);
+            ->update(['image' => Storage::disk('s3')->url($path)]);
 
         return redirect()->route('admin.gametypes.index');
     }

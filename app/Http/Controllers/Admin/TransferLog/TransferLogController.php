@@ -40,4 +40,5 @@ class TransferLogController extends Controller
 
         return view('admin.trans_log.detail', compact('transferLogs'));
     }
+
 }

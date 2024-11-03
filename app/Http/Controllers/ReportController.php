@@ -37,7 +37,7 @@ class ReportController extends Controller
         if (! Auth::user()->hasRole('Admin')) {
             $query->where('reports.agent_id', Auth::id());
         }
-        $agentReports = $query->groupBy('reports.member_name', 'users.name', 'users.user_name')->get();
+        $agentReports = $query->groupBy('reports.member_name', 'users.name', 'users.user_name')->paginate(10);
 
         return view('report.show', compact('agentReports'));
     }
@@ -45,8 +45,7 @@ class ReportController extends Controller
     // amk
     public function detail(Request $request, $userName)
     {
-        if ($request->ajax()) {
-            $query = DB::table('reports')
+            $reports = DB::table('reports')
                 ->join('users', 'reports.member_name', '=', 'users.user_name')
                 ->join('products', 'products.code', '=', 'reports.product_code')
                 ->where('reports.member_name', $userName)
@@ -56,15 +55,10 @@ class ReportController extends Controller
                     'users.name as name',
                     'products.name as product_name',
                     DB::raw('(reports.payout_amount - reports.valid_bet_amount) as win_or_lose')
-                );
-            $report = $query->get();
-
-            return DataTables::of($report)
-                ->addIndexColumn()
-                ->make(true);
-        }
+                )->paginate(20);
+        
         $products = Product::all();
 
-        return view('report.detail', compact('products', 'userName'));
+        return view('report.detail', compact('products', 'userName', 'reports'));
     }
 }

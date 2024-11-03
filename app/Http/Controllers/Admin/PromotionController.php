@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin\Promotion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class PromotionController extends Controller
 {
@@ -35,14 +36,10 @@ class PromotionController extends Controller
         $request->validate([
             'image' => 'required',
         ]);
-        // image
-        $image = $request->file('image');
-        $ext = $image->getClientOriginalExtension();
-        $filename = uniqid('promotion').'.'.$ext; // Generate a unique filename
-        $image->move(public_path('assets/img/promotions/'), $filename); // Save the file
+        $path = $request->file('image')->store('images', 's3');
 
-        $promotion = Promotion::create([
-            'image' => $filename,
+        Promotion::create([
+            'image' => Storage::disk('s3')->url($path)
         ]);
 
         return redirect()->route('admin.promotions.index')->with('success', 'New Promotion Created Successfully.');
@@ -70,12 +67,10 @@ class PromotionController extends Controller
     public function update(Request $request, Promotion $promotion)
     {
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $ext = $image->getClientOriginalExtension();
-            $filename = uniqid('promotion').'.'.$ext;
-            $image->move(public_path('assets/img/promotions/'), $filename);
+            $path = $request->file('image')->store('images', 's3');
+
             $promotion->update([
-                'image' => $filename,
+                'image' => Storage::disk('s3')->url($path)
             ]);
 
             return redirect()->route('admin.promotions.index')->with('success', 'Promotion Updated');
@@ -90,7 +85,6 @@ class PromotionController extends Controller
      */
     public function destroy(Promotion $promotion)
     {
-        File::delete(public_path('assets/img/promotions/'.$promotion->image));
         $promotion->delete();
 
         return redirect()->route('admin.promotions.index')->with('success', 'Promotion Deleted.');

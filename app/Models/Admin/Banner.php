@@ -13,10 +13,4 @@ class Banner extends Model
         'image',
     ];
 
-    protected $appends = ['img_url'];
-
-    public function getImgUrlAttribute()
-    {
-        return asset('assets/img/banners/'.$this->image);
-    }
 }
