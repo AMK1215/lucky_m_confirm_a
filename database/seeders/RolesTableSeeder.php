@@ -12,7 +12,14 @@ class RolesTableSeeder extends Seeder
      */
     public function run(): void
     {
+
         $roles = [
+            [
+
+                'title' => 'SuperAdmin',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
             [
 
                 'title' => 'Admin',

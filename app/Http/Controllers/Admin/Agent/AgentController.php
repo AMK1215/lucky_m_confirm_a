@@ -89,10 +89,17 @@ class AgentController extends Controller
             ]);
         }
         $transfer_amount = $inputs['amount'];
+         if ($request->hasFile('agent_logo')) {
+        $image = $request->file('agent_logo');
+        $ext = $image->getClientOriginalExtension();
+        $filename = uniqid('logo_') . '.' . $ext;
+        $image->move(public_path('assets/img/sitelogo/'), $filename);
+        $request->agent_logo = $filename;
+    }
 
-        if ($request->hasFile('agent_logo')) {
-            $path = $request->file('agent_logo')->store('images', 's3');
-        }
+        // if ($request->hasFile('agent_logo')) {
+        //     $path = $request->file('agent_logo')->store('images', 's3');
+        // }
 
         $agent = User::create([
             'user_name' => $request->user_name,
@@ -101,7 +108,8 @@ class AgentController extends Controller
             'password' => Hash::make($inputs['password']),
             'agent_id' => Auth::id(),
             'type' => UserType::Agent,
-            'agent_logo' => Storage::disk('s3')->url($path),
+            //'agent_logo' => Storage::disk('s3')->url($path),
+            'agent_logo' => $request->agent_logo,
             'referral_code' => $request->referral_code,
             'line_id' => $request->line_id,
             'payment_type_id' => $request->payment_type_id,
