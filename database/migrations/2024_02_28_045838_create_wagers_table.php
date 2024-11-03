@@ -14,13 +14,10 @@ return new class extends Migration
     {
         Schema::create('wagers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('seamless_wager_id')->unique();  // Unique index already applied
+            $table->unsignedBigInteger('seamless_wager_id')->unique()->index();  // Unique index already applied
             $table->unsignedBigInteger('user_id')->nullable()->index();  // Index on user_id for performance
             $table->string('status')->default(WagerStatus::Ongoing->value)->index();  // Index on status if frequently queried
             $table->timestamps();
-            // $table->id();
-            // $table->unsignedBigInteger('seamless_wager_id')->unique();
-            // $table->timestamps();
         });
     }
 

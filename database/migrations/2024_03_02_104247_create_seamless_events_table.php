@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('seamless_events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id');
-            $table->string('message_id');
-            $table->string('product_id');
+            $table->foreignId('user_id')->index();
+            $table->string('message_id')->index();
+            $table->string('product_id')->index();
             $table->timestamp('request_time');
             $table->json('raw_data')->nullable();
             $table->timestamps();
