@@ -104,6 +104,25 @@ trait PlaceBetWebhook
         } while ($retryCount < $maxRetries);
     }
 
+    public function insertBets(array $bets, SeamlessEvent $event)
+    {
+        $chunkSize = 50; // Define the chunk size
+        $batches = array_chunk($bets, $chunkSize);
+
+        $userId = $event->user_id; // Get user_id from SeamlessEvent
+
+        // Process chunks in a transaction to ensure data integrity
+        DB::transaction(function () use ($batches, $event) {
+            foreach ($batches as $batch) {
+                // Call createWagerTransactions for each batch
+                $this->createWagerTransactions($batch, $event);
+            }
+        });
+
+        return count($bets).' bets inserted successfully.';
+    }
+
+
     public function createWagerTransactions(array $betBatch, SeamlessEvent $event)
     {
         $retryCount = 0;
