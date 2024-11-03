@@ -4,7 +4,7 @@ php -r "file_put_contents('/var/www/lucky_m_confirm_a/storage/logs/laravel.log',
 // created dev branch for kzt
 
 tail -f /var/www/lucky_m_confirm_a/storage/logs/laravel.log
-
+sudo su ubuntu
 crontab -e
 
 * * * * * cd /var/www/lucky_m_confirm_a && php artisan schedule:run >> /dev/null 2>&1
