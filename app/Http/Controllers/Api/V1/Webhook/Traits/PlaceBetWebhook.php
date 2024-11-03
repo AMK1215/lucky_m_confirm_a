@@ -141,10 +141,13 @@ trait PlaceBetWebhook
                             $transactionData = [
                                 'Status' => $transaction->Status,
                                 'ProductID' => $transaction->ProductID,
+                                'GameType' => $transaction->GameType,
                                 'TransactionID' => $transaction->TransactionID,
                                 'WagerID' => $transaction->WagerID,
                                 'BetAmount' => $transaction->BetAmount,
                                 'TransactionAmount' => $transaction->TransactionAmount,
+                                'PayoutAmount' => $transaction->PayoutAmount,
+                                'ValidBetAmount' => $transaction->ValidBetAmount,
                                 'Rate' => $transaction->Rate,
                                 'ActualGameTypeID' => $transaction->ActualGameTypeID,
                                 'ActualProductID' => $transaction->ActualProductID,
@@ -166,7 +169,7 @@ trait PlaceBetWebhook
                         }
 
                         $seamlessTransactionsData[] = [
-                            'user_id' => $userId,
+                            'user_id' => $userId,  // Use user_id from the SeamlessEvent
                             'wager_id' => $existingWager ? $existingWager->id : null,
                             'game_type_id' => $transactionData['ActualGameTypeID'],
                             'product_id' => $transactionData['ActualProductID'],
@@ -174,8 +177,9 @@ trait PlaceBetWebhook
                             'rate' => $transactionData['Rate'],
                             'transaction_amount' => $transactionData['TransactionAmount'],
                             'bet_amount' => $transactionData['BetAmount'],
+                            'valid_amount' => $transactionData['ValidBetAmount'],
                             'status' => $transactionData['Status'],
-                            'seamless_event_id' => $seamlessEventId,
+                            'seamless_event_id' => $seamlessEventId,  // Include seamless_event_id
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];
