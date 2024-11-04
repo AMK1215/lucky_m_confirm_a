@@ -37,10 +37,13 @@ class BannerController extends Controller
             'image' => 'required',
         ]);
         // image
-        $path = $request->file('image')->store('images', 's3');
+        $image = $request->file('image');
+        $ext = $image->getClientOriginalExtension();
+        $filename = uniqid('banner').'.'.$ext; // Generate a unique filename
+        $image->move(public_path('assets/img/banners/'), $filename); // Save the file
 
         Banner::create([
-            'image' => Storage::disk('s3')->url($path),
+            'image' => $filename
         ]);
 
         return redirect(route('admin.banners.index'))->with('success', 'New Banner Image Added.');
@@ -73,10 +76,17 @@ class BannerController extends Controller
         $request->validate([
             'image' => 'required',
         ]);
-        $path = $request->file('image')->store('images', 's3');
+         //remove banner from localstorage
+         File::delete(public_path('assets/img/banners/'.$banner->image));
 
+         // image
+         $image = $request->file('image');
+         $ext = $image->getClientOriginalExtension();
+         $filename = uniqid('banner').'.'.$ext; // Generate a unique filename
+         $image->move(public_path('assets/img/banners/'), $filename); // Save the file
+ 
         $banner->update([
-            'image' => Storage::disk('s3')->url($path),
+            'image' => $filename
         ]);
 
         return redirect(route('admin.banners.index'))->with('success', 'Banner Image Updated.');

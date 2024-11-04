@@ -22,7 +22,7 @@ enum UserType: int
     public static function childUserType(UserType $type)
     {
         return match ($type) {
-            self::SuperAdmin => self::SuperAdmin,
+            self::SuperAdmin => self::Admin,
             self::Admin => self::Agent,
             self::Agent => self::Player,
             self::Player => self::Player,

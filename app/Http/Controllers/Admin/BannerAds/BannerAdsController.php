@@ -36,10 +36,14 @@ class BannerAdsController extends Controller
         $request->validate([
             'image' => 'required',
         ]);
-        $path = $request->file('image')->store('images', 's3');
+        // image
+        $image = $request->file('image');
+        $ext = $image->getClientOriginalExtension();
+        $filename = uniqid('banner') . '.' . $ext; // Generate a unique filename
+        $image->move(public_path('assets/img/banners_ads/'), $filename); // Save the file
 
         BannerAds::create([
-            'image' => Storage::disk('s3')->url($path),
+            'image' => $filename
         ]);
 
         return redirect(route('admin.adsbanners.index'))->with('success', 'New Ads Banner Image Added.');
@@ -74,10 +78,17 @@ class BannerAdsController extends Controller
             'image' => 'required',
         ]);
 
-        $path = $request->file('image')->store('images', 's3');
+        // Remove banner from local storage
+        File::delete(public_path('assets/img/banners_ads/' . $adsbanner->image));
+
+        // image
+        $image = $request->file('image');
+        $ext = $image->getClientOriginalExtension();
+        $filename = uniqid('banner') . '.' . $ext; // Generate a unique filename
+        $image->move(public_path('assets/img/banners_ads/'), $filename); // Save the file
 
         $adsbanner->update([
-            'image' => Storage::disk('s3')->url($path),
+            'image' => $filename
         ]);
 
         return redirect(route('admin.adsbanners.index'))->with('success', 'Ads Banner Image Updated.');

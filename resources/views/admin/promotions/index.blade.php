@@ -46,7 +46,7 @@
             <tr>
               <td class="text-sm font-weight-normal">{{ ++$key }}</td>
               <td>
-                <img width="150px" class="img-thumbnail" src="{{ $promotion->image }}" alt="">
+                <img width="150px" class="img-thumbnail" src="{{ $promotion->img_url }}" alt="">
               </td>
               <td class="text-sm font-weight-normal">{{ $promotion->created_at->format('F j, Y') }}</td>
               <td>
@@ -135,7 +135,6 @@
     icon: 'success',
     title: '{{ session('
     success ') }}',
-    background: 'hsl(230, 40%, 10%)',
     showConfirmButton: false,
     timer: 1500
   })

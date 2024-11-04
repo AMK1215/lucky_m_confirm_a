@@ -22,7 +22,7 @@
       <div class="card-header pb-0">
         <div class="d-lg-flex">
           <div>
-            <h5 class="mb-0">Banners Dashboards</h5>
+            <h5 class="mb-0">AdsBanner Dashboards</h5>
 
           </div>
           <div class="ms-auto my-auto mt-lg-0 mt-4">
@@ -48,7 +48,7 @@
             <tr>
               <td class="text-sm font-weight-normal">{{ ++$key }}</td>
               <td>
-                <img width="100px" class="img-thumbnail" src="{{ $banner->image }}" alt="">
+                <img width="100px" class="img-thumbnail" src="{{ $banner->img_url }}" alt="">
               </td>
               <td class="text-sm font-weight-normal">{{ $banner->created_at->format('F j, Y') }}</td>
               <td class="text-sm font-weight-normal">{{ $banner->updated_at->format('F j, Y') }}</td>
@@ -139,7 +139,6 @@
     title: '{{ session('
     success ') }}',
     showConfirmButton: false,
-    background: 'hsl(230, 40%, 10%)',
     timer: 1500
   })
 </script>

@@ -36,10 +36,14 @@ class PromotionController extends Controller
         $request->validate([
             'image' => 'required',
         ]);
-        $path = $request->file('image')->store('images', 's3');
+   // image
+   $image = $request->file('image');
+   $ext = $image->getClientOriginalExtension();
+   $filename = uniqid('promotion').'.'.$ext; // Generate a unique filename
+   $image->move(public_path('assets/img/promotions/'), $filename); // Save the file
 
         Promotion::create([
-            'image' => Storage::disk('s3')->url($path)
+            'image' => $filename
         ]);
 
         return redirect()->route('admin.promotions.index')->with('success', 'New Promotion Created Successfully.');
@@ -67,10 +71,13 @@ class PromotionController extends Controller
     public function update(Request $request, Promotion $promotion)
     {
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('images', 's3');
+            $image = $request->file('image');
+            $ext = $image->getClientOriginalExtension();
+            $filename = uniqid('promotion').'.'.$ext;
+            $image->move(public_path('assets/img/promotions/'), $filename);
 
             $promotion->update([
-                'image' => Storage::disk('s3')->url($path)
+                'image' => $filename 
             ]);
 
             return redirect()->route('admin.promotions.index')->with('success', 'Promotion Updated');
@@ -85,6 +92,7 @@ class PromotionController extends Controller
      */
     public function destroy(Promotion $promotion)
     {
+        File::delete(public_path('assets/img/promotions/'.$promotion->image));
         $promotion->delete();
 
         return redirect()->route('admin.promotions.index')->with('success', 'Promotion Deleted.');
