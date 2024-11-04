@@ -173,7 +173,6 @@
         Swal.fire({
             title: successMessage,
             icon: "success",
-            background: 'hsl(230, 40%, 10%)',
             showConfirmButton: false,
             showCloseButton: true,
 

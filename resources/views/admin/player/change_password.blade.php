@@ -113,7 +113,7 @@
 <script>
   var errorMessage = @json(session('error'));
   var successMessage = @json(session('success'));
-  var url = 'https://maxwinmyanmar.com/login';
+  var url = 'https://luckym.pro/login';
   var name = @json(session('username'));
   var pw = @json(session('password'));
 
@@ -152,7 +152,6 @@
   Swal.fire({
     icon: 'error',
     title: errorMessage,
-    background: 'hsl(230, 40%, 10%)',
     showConfirmButton: false,
     timer: 1500
   })

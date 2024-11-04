@@ -135,7 +135,6 @@
     title: '{{ session('
     success ') }}',
     showConfirmButton: false,
-    background: 'hsl(230, 40%, 10%)',
     timer: 1500
   })
 </script>

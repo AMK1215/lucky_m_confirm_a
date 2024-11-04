@@ -185,7 +185,6 @@
                 title: successMessage,
                 text: '{{ session('
       SuccessRequest ') }}',
-                background: 'hsl(230, 40%, 10%)',
                 timer: 3000,
                 showConfirmButton: false
             });
@@ -194,7 +193,6 @@
                 icon: 'error',
                 title: '',
                 text: errorMessage,
-                background: 'hsl(230, 40%, 10%)',
                 timer: 3000,
                 showConfirmButton: false
             });

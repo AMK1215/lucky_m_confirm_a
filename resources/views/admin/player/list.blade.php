@@ -110,7 +110,6 @@ $(document).ready(function() {
    title: 'Are you sure?',
    text: "You won't be able to revert this!",
    icon: 'warning',
-   background: 'hsl(230, 40%, 10%)',
    showCancelButton: true,
    confirmButtonText: 'Yes, delete it!',
    cancelButtonText: 'No, cancel!'
