@@ -121,11 +121,10 @@
   Swal.fire({
     title: successMessage,
     icon: "success",
-    background: 'hsl(230, 40%, 10%)',
     showConfirmButton: false,
     showCloseButton: true,
     html: `
-  <table class="table table-bordered" style="background:#eee;">
+  <table class="table table-bordered">
   <tbody>
     <tr>
     <td>Url</td>

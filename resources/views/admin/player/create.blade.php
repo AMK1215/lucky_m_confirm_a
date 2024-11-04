@@ -213,7 +213,7 @@
             showConfirmButton: false,
             showCloseButton: true,
             html: `
-  <table class="table table-bordered" style="color: #fff;">
+  <table class="table table-bordered">
   <tbody>
     <tr>
     <td>Url</td>
