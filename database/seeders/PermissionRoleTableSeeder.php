@@ -14,11 +14,7 @@ class PermissionRoleTableSeeder extends Seeder
      */
     public function run(): void
     {
-        $superadmin_permissions = Permission::whereIn('title', [
-            'superadmin_access',
-            'superadmin_index',
-        ]);
-        Role::findOrFail(4)->permissions()->sync($superadmin_permissions->pluck('id'));
+
 
         $admin_permissions = Permission::whereIn('title', [
             'admin_access',
@@ -56,5 +52,11 @@ class PermissionRoleTableSeeder extends Seeder
         ])->pluck('id');
 
         Role::findOrFail(2)->permissions()->sync($agent_permissions);
+
+        $superadmin_permissions = Permission::whereIn('title', [
+            'superadmin_access',
+            'superadmin_index',
+        ]);
+        Role::findOrFail(4)->permissions()->sync($superadmin_permissions->pluck('id'));
     }
 }
