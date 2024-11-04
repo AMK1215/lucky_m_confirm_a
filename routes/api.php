@@ -59,8 +59,8 @@ Route::group(['prefix' => 'Seamless'], function () {
     Route::post('GetGameList', [LaunchGameController::class, 'getGameList']);
     Route::post('GameResult', [GameResultController::class, 'gameResult']);
     Route::post('Rollback', [RollbackController::class, 'rollback']);
-    //Route::post('PlaceBet', [PlaceBetNewVersionController::class, 'placeBetNew']);
-    Route::post('PlaceBet', [PlaceBetWebhookController::class, 'placeBetNew']);
+    Route::post('PlaceBet', [PlaceBetNewVersionController::class, 'placeBetNew']);
+    //Route::post('PlaceBet', [PlaceBetWebhookController::class, 'placeBetNew']);
 
     Route::post('CancelBet', [CancelBetController::class, 'cancelBet']);
     Route::post('BuyIn', [BuyInController::class, 'buyIn']);

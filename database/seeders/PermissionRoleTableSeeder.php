@@ -14,6 +14,8 @@ class PermissionRoleTableSeeder extends Seeder
      */
     public function run(): void
     {
+
+
         $admin_permissions = Permission::whereIn('title', [
             'admin_access',
             'agent_access',
@@ -26,7 +28,7 @@ class PermissionRoleTableSeeder extends Seeder
             'make_transfer',
             'game_type_access',
         ]);
-        Role::findOrFail(2)->permissions()->sync($admin_permissions->pluck('id'));
+        Role::findOrFail(1)->permissions()->sync($admin_permissions->pluck('id'));
         // Admin permissions
         // Agent gets specific permissions
         $agent_permissions = Permission::whereIn('title', [
@@ -49,6 +51,12 @@ class PermissionRoleTableSeeder extends Seeder
             'site_logo',
         ])->pluck('id');
 
-        Role::findOrFail(3)->permissions()->sync($agent_permissions);
+        Role::findOrFail(2)->permissions()->sync($agent_permissions);
+
+        $superadmin_permissions = Permission::whereIn('title', [
+            'superadmin_access',
+            'superadmin_index',
+        ]);
+        Role::findOrFail(4)->permissions()->sync($superadmin_permissions->pluck('id'));
     }
 }
