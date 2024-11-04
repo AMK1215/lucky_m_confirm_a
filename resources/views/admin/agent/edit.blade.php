@@ -114,7 +114,7 @@
                                 <label for="title">Agent Site Logo Image</label>
                                 <input type="file" class="form-control" id="" name="agent_logo">
                                 @if($agent->agent_logo)
-                                    <img src="{{$agent->agent_logo}}" alt="" width="100px">
+                                    <img src="{{asset('assets/img/sitelogo').'/'.$agent->agent_logo}}" alt="" width="100px">
                                 @endif
                             </div>
                             <div class="custom-form-group">
