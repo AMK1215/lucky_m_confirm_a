@@ -60,7 +60,7 @@
                         <p class="text-danger font-weight-bold">Withdraw</p>
                     @endif
                 </td>
-                <td>{{$log->note}}</td>
+                <td>{{$log->note  == 'null' ? '' : $log->note}}</td>
             </tr>
         @endforeach
     </tbody>
