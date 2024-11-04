@@ -31,7 +31,7 @@ class AgentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    private const AGENT_ROLE = 3;
+    private const AGENT_ROLE = 2;
 
     public function index()
     {
