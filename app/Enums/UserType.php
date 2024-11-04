@@ -4,28 +4,31 @@ namespace App\Enums;
 
 enum UserType: int
 {
-    case SuperAdmin = 1;
     case Admin = 10;
     case Agent = 20;
     case Player = 30;
+    case SuperAdmin = 40;
+
 
     public static function usernameLength(UserType $type)
     {
         return match ($type) {
-            self::SuperAdmin => 1,
-            self::Admin => 2,
-            self::Agent => 3,
-            self::Player => 4,
+            self::Admin => 1,
+            self::Agent => 2,
+            self::Player => 3,
+            self::SuperAdmin => 4,
+
         };
     }
 
     public static function childUserType(UserType $type)
     {
         return match ($type) {
-            self::SuperAdmin => self::SuperAdmin,
             self::Admin => self::Agent,
             self::Agent => self::Player,
             self::Player => self::Player,
+            self::SuperAdmin => self::SuperAdmin,
+
         };
     }
 }

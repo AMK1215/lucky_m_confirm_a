@@ -104,6 +104,17 @@ class PermissionsTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+
+            [
+                'title' => 'superadmin_access',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'title' => 'superadmin_index',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         Permission::insert($permissions);

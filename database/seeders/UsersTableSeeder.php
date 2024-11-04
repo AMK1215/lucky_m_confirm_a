@@ -14,9 +14,6 @@ class UsersTableSeeder extends Seeder
 {
     public function run(): void
     {
-         // Create SuperAdmin
-        $superAdmin = $this->createUser(UserType::SuperAdmin, 'SuperAdmin', 'superadmin', '09100000000');
-        (new WalletService)->deposit($superAdmin, 1000000 * 10, TransactionName::CapitalDeposit);
 
         $admin = $this->createUser(UserType::Admin, 'Owner', 'luckym', '09123456789');
         (new WalletService)->deposit($admin, 502000, TransactionName::CapitalDeposit);
@@ -26,6 +23,10 @@ class UsersTableSeeder extends Seeder
 
         $player_1 = $this->createUser(UserType::Player, 'Player 1', 'P111111', '09111111111', $agent_1->id);
         (new WalletService)->transfer($agent_1, $player_1, 3000.0, TransactionName::CreditTransfer);
+        // Create SuperAdmin
+        $superAdmin = $this->createUser(UserType::SuperAdmin, 'SuperAdmin', 'superadmin', '09100000000');
+        (new WalletService)->deposit($superAdmin, 5000000 * 10, TransactionName::CapitalDeposit);
+
     }
 
     private function createUser(UserType $type, $name, $user_name, $phone, $parent_id = null, $referral_code = null)
