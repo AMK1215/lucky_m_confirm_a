@@ -599,7 +599,7 @@ class AgentController extends Controller
                 'users.commission as agent_comm',
                 DB::raw('(reports.payout_amount - reports.valid_bet_amount) as win_or_lose') // Calculating win_or_lose
             )
-            ->get();
+            ->paginate(20);
 
         return view('admin.agent.auth_win_lose_details', compact('details'));
     }

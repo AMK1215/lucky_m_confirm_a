@@ -8,6 +8,10 @@
 </head>
 <body>
  <style>
+     .pagination {
+        float: inline-end;
+    }
+
     h1 {
         font-family: Arial, sans-serif;
         font-size: 24px;
@@ -81,5 +85,7 @@
         @endforeach
     </tbody>
 </table>
+{{$details->links()}}
+
 </body>
 </html>
