@@ -73,7 +73,7 @@ class PullReport extends Command
 
         if ($response->successful()) {
             $data = $response->json();
-            Log::info($data);
+            //Log::info($data);
             if ($data['Wagers'] != null) {
                 $data = $response['Wagers'];
                 //Log::info($response);
