@@ -3,7 +3,7 @@
 namespace App\Services\Slot;
 
 use App\Enums\SlotWebhookResponseCode;
-use App\Http\Requests\Slot\SlotWebhookRequest;
+use App\Http\Requests\Slot\BonuSlotWebhookRequest;
 use App\Models\SeamlessTransaction;
 use App\Models\Wager;
 use App\Services\Slot\Dto\RequestTransaction;
@@ -28,7 +28,7 @@ class BonuSlotWebhookValidator
      */
     protected $requestTransactions;
 
-    protected function __construct(protected SlotWebhookRequest $request) {}
+    protected function __construct(protected BonuSlotWebhookRequest $request) {}
 
     public function validate()
     {
@@ -158,7 +158,7 @@ class BonuSlotWebhookValidator
         return isset($this->response);
     }
 
-    public static function make(SlotWebhookRequest $request)
+    public static function make(BonuSlotWebhookRequest $request)
     {
         return new self($request);
     }

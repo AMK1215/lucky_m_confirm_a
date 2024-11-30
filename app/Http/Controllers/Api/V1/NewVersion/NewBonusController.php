@@ -65,9 +65,9 @@ class NewBonusController extends Controller
         }
 
         $before_balance = $request->getMember()->balanceFloat;
+        $event = $this->createEvent($request);
 
         DB::beginTransaction();
-            $event = $this->createEvent($request);
 
 
         try {
