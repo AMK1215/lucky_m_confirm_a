@@ -3,21 +3,21 @@
 namespace App\Http\Controllers\Api\V1\NewVersion;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Slot\SlotWebhookRequest;
+use App\Http\Requests\Slot\BonuSlotWebhookRequest;
 use App\Services\Slot\SlotWebhookService;
 use App\Enums\SlotWebhookResponseCode;
 use App\Enums\TransactionName;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Api\V1\Webhook\Traits\UseWebhook;
+use App\Http\Controllers\Api\V1\Webhook\Traits\BonuUseWebhook;
 use App\Models\User;
 
 class NewJackpotController extends Controller
 {
-    use UseWebhook;
+    use BonuUseWebhook;
 
-    public function jackpot(SlotWebhookRequest $request)
+    public function jackpot(BonuSlotWebhookRequest $request)
     {
         $userId = $request->getMember()->id;
 
