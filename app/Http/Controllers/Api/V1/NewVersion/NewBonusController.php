@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1\NewVersion;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Slot\SlotWebhookRequest;
+use App\Http\Requests\Slot\BonuSlotWebhookRequest;
 use App\Services\Slot\SlotWebhookService;
 use App\Enums\SlotWebhookResponseCode;
 use App\Enums\TransactionName;
@@ -18,7 +18,7 @@ class NewBonusController extends Controller
 {
     use UseWebhook;
 
-    public function bonus(SlotWebhookRequest $request)
+    public function bonus(BonuSlotWebhookRequest $request)
     {
         $userId = $request->getMember()->id;
 
