@@ -8,7 +8,7 @@ use App\Models\SeamlessTransaction;
 use App\Models\Wager;
 use App\Services\Slot\Dto\RequestTransaction;
 
-class SlotWebhookValidator
+class BonuSlotWebhookValidator
 {
     protected ?SeamlessTransaction $existingTransaction;
 
