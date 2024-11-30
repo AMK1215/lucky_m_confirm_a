@@ -10,13 +10,13 @@ use App\Enums\TransactionName;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Api\V1\Webhook\Traits\UseWebhook;
+use App\Http\Controllers\Api\V1\Webhook\Traits\BonuUseWebhook;
 use App\Models\User;
 
 
 class NewBonusController extends Controller
 {
-    use UseWebhook;
+    use BonuUseWebhook;
 
     public function bonus(BonuSlotWebhookRequest $request)
     {
