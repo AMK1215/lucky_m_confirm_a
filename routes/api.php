@@ -71,8 +71,8 @@ Route::group(['prefix' => 'Seamless'], function () {
     Route::post('PushBet', [PushBetController::class, 'pushBet']);
     //Route::post('Bonus', [BonusController::class, 'bonus']);
     Route::post('Bonus', [NewBonusController::class, 'bonus']);
-    Route::post('Jackpot', [JackPotController::class, 'jackPot']);
-    //Route::post('Jackpot', [NewJackpotController::class, 'jackPot']);
+    //Route::post('Jackpot', [JackPotController::class, 'jackPot']);
+    Route::post('Jackpot', [NewJackpotController::class, 'jackPot']);
 
     Route::post('MobileLogin', [MobileLoginController::class, 'MobileLogin']);
     // });
