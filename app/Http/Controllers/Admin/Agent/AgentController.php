@@ -490,6 +490,11 @@ class AgentController extends Controller
             $monthYear = Carbon::parse($request->month_year);
             $query->whereMonth('reports.created_at', $monthYear->month)
                 ->whereYear('reports.created_at', $monthYear->year);
+        } else {
+            $currentMonthStart = Carbon::now()->startOfMonth()->format('Y-m-d H:i:s');
+            $currentMonthEnd = Carbon::now()->endOfMonth()->format('Y-m-d H:i:s');
+
+            $query->whereBetween('reports.created_at', [$currentMonthStart, $currentMonthEnd]);
         }
 
         $agentReports = $query->groupBy('reports.agent_id', 'users.name', 'report_month_year')->get();

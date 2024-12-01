@@ -1,97 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Agent Monthly Report</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon" sizes="76x76" href="../../assets/img/apple-icon.png">
+    <link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+    <title>
+       Luckym Slot
+    </title>
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
-    <script src="{{asset('admin_app/assets/js/jquery.min.js')}}"></script>
-    <script src="{{asset('admin_app/assets/js/jquery.dataTables.min.js')}}"></script>
-    <script
-        src="{{asset('admin_app/assets/js/dataTables.bootstrap.min.js')}}"></script>
-    <link rel="stylesheet"
-        href="{{asset('admin_app/assets/css/bootstrap.min.css')}}">
-    <link rel="stylesheet"
-        href="{{asset('admin_app/assets/css/dataTables.bootstrap.min.css')}}">
+    <!-- Nucleo Icons -->
+    <link href="{{ asset('admin_app/assets/css/nucleo-icons.css')}}" rel="stylesheet" />
+    <link href="{{ asset('admin_app/assets/css/nucleo-svg.css')}}" rel="stylesheet" />
+    <!-- Font Awesome Icons -->
+    <script src="https://kit.fontawesome.com/b829c5162c.js" crossorigin="anonymous"></script>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <!-- CSS Files -->
+    <link id="pagestyle" href="{{ asset('admin_app/assets/css/material-dashboard.css?v=3.0.6')}}" rel="stylesheet" />
+
+    <script defer data-site="https://delightmyanmar.online" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .dataTable-wrapper .dataTable-container .table thead tr th{
+            color: black;
         }
-
-        table,
-        th,
-        td {
-            border: 1px solid #ddd;
-        }
-
-        th,
-        td {
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-
-        .summary {
-            background-color: #ffffe0;
-            font-weight: bold;
-        }
-
-        .qty {
-            text-align: left;
-        }
-
-        .win {
-            color: green;
-        }
-
-        .lose {
-            color: red;
-        }
-
-        .pagination {
-            float: inline-end;
+        .dataTable-table>thead>tr>th {
+            border-bottom: 1px solid black;
         }
     </style>
-
 </head>
 
-<body>
-    <section>
-        <h1 class="text-center">Win/Lose Report</h1>
+<body class="g-sidenav-show  bg-gray-200">
 
-        <div class="card">
 
-            <div class="card-body dflex-row">
-                <form method="GET" action="{{ route('admin.report.index') }}">
-                    <label for="start_date">Start Date:</label>
-                    <input type="date" id="start_date" name="start_date" value="{{ request('start_date') }}">
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
 
-                    <label for="end_date">End Date:</label>
-                    <input type="date" id="end_date" name="end_date" value="{{ request('end_date') }}">
+        <div class="container-fluid py-4">
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
 
-                    <label for="month_year">MemberAccount:</label>
-                    <input type="text" id="text" name="member_name" value="{{ request('member_name') }}">
+                        <div class="card-header">
+                            <h5 class="mb-0">Win/Lose Detail Report</h5>
+                            <form action="{{route('admin.report.index')}}" method="GET">
+                                <div class="row">
 
-                    <button type="submit">Filter</button>
-                </form>
-
-            </div>
-        </div>
-        <br>
-        <div class="mt-5">
-            <table class="mt-5">
+                                    <div class="col-md-3">
+                                        <div class="input-group input-group-static my-3">
+                                            <label>Player</label>
+                                            <input type="text" class="form-control" id="" value="{{request()->get('member_name')}}" name="member_name" >
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="input-group input-group-static my-3">
+                                            <label>From</label>
+                                            <input type="date" class="form-control" id="start_date" name="start_date" >
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="input-group input-group-static my-3">
+                                            <label>To</label>
+                                            <input type="date" class="form-control" id="to" name="end_date" >
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="submit" class="btn btn-sm btn-primary mt-5">Search</button>
+                                        <a href="{{route('admin.report.index')}}" class="btn btn-link text-primary ms-auto border-0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Refresh" style="margin-top: 50px;">
+                          <i class="material-icons text-lg">refresh</i>
+                      </a>                                    </div>
+                            </form>
+                        </div>
+                        <div class="table-responsive">
+                        <table class="table table-flush" id="datatable-basic">
                 <thead>
                     <tr>
                         <th rowspan="2">Account</th>
                         <th rowspan="2">Name</th>
                         <th rowspan="2">Bet Amount</th>
-                        <th rowspan="2">Valid Amount</th>
                         <th rowspan="2">Stake Count</th>
-                        <th rowspan="2">Gross Comm</th>
                         <th colspan="3">Member</th>
                         <th colspan="3">Downline</th>
                         <th colspan="3">Myself</th>
@@ -119,9 +106,7 @@
                         <td>{{ $report->user_name }}</td>
                         <td>{{ $report->member_name }}</td>
                         <td>{{ number_format($report->total_bet_amount, 2) }}</td>
-                        <td>{{ number_format($report->total_valid_bet_amount, 2) }}</td>
                         <td>{{ $report->stake_count }}</td> <!-- Placeholder for stake count -->
-                        <td>0</td>
 
                         <!-- Win/Loss for Member -->
                         <td class="{{ $report->win_or_lose < 0 ? 'lose' : 'win' }}">
@@ -148,8 +133,8 @@
                         <td>0</td> <!-- Upline Comm -->
                         <td>{{ number_format($report->win_or_lose + $report->total_commission_amount, 2) }}</td> <!-- Upline Total -->
                         <td>
-                            <a href="{{ route('admin.report.detail', $report->user_name) }}" class="btn btn-info">
-                                View Detail
+                            <a href="{{ route('admin.report.detail', $report->user_name) }}" class="btn btn-info btn-sm">
+                             Detail
                             </a>
                         </td>
                     </tr>
@@ -157,9 +142,55 @@
 
                 </tbody>
             </table>
-            {{$agentReports->links()}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </section>
+    </main>
+
+    <script src="https://kit.fontawesome.com/b829c5162c.js" crossorigin="anonymous"></script>
+    <script src="{{ asset('admin_app/assets/js/core/popper.min.js')}}"></script>
+    <script src="{{ asset('admin_app/assets/js/core/bootstrap.min.js')}}"></script>
+    <script src="{{ asset('admin_app/assets/js/plugins/perfect-scrollbar.min.js')}}"></script>
+    <script src="{{ asset('admin_app/assets/js/plugins/smooth-scrollbar.min.js')}}"></script>
+
+    <script>
+        var win = navigator.platform.indexOf('Win') > -1;
+        if (win && document.querySelector('#sidenav-scrollbar')) {
+            var options = {
+                damping: '0.5'
+            }
+            Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+        }
+    </script>
+    <!-- Github buttons -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script src="{{ asset('admin_app/assets/js/plugins/datatables.js') }}"></script>
+
+    <script>
+        const dataTableBasic = new simpleDatatables.DataTable("#datatable-basic", {
+            searchable: true,
+            fixedHeight: true
+        });
+
+        const dataTableSearch = new simpleDatatables.DataTable("#datatable-search", {
+            searchable: true,
+            fixedHeight: true
+        });
+    </script>
+    <script>
+        var win = navigator.platform.indexOf('Win') > -1;
+        if (win && document.querySelector('#sidenav-scrollbar')) {
+            var options = {
+                damping: '0.5'
+            }
+            Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+        }
+    </script>
+
+
 </body>
 
 </html>
