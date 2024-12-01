@@ -26,12 +26,14 @@ use App\Http\Controllers\Api\V1\Webhook\JackPotController;
 use App\Http\Controllers\Api\V1\Webhook\MobileLoginController;
 use App\Http\Controllers\Api\V1\Webhook\NewBonusController;
 use App\Http\Controllers\Api\V1\Webhook\NewJackpotController;
+// use App\Http\Controllers\Api\V1\Webhook\NewBonusController;
+// use App\Http\Controllers\Api\V1\Webhook\NewJackpotController;
 use App\Http\Controllers\Api\V1\Webhook\PushBetController;
 use App\Http\Controllers\Api\V1\Webhook\RollbackController;
 use App\Http\Controllers\Api\V1\Webhook\TestingController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\NewVersion\NewBonusController;
-use App\Http\Controllers\Api\V1\NewVersion\NewJackpotController;
+// use App\Http\Controllers\Api\V1\NewVersion\NewBonusController;
+// use App\Http\Controllers\Api\V1\NewVersion\NewJackpotController;
 
 
 //login route post
