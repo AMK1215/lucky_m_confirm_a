@@ -20,6 +20,7 @@ use App\Http\Requests\Slot\BonuSlotWebhookRequest;
 
 class BuyOutController extends Controller
 {
+    // amk
     use BonuUseWebhook;
 
     public function buyOut(BonuSlotWebhookRequest $request)
